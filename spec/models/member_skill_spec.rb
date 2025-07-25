@@ -1,5 +1,5 @@
 require 'rails_helper'
 
-RSpec.describe MemberSkill, type: :model do
+RSpec.describe MemberSkill do
   pending "add some examples to (or delete) #{__FILE__}"
 end

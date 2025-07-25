@@ -1,0 +1,115 @@
+require:
+  - rubocop-rspec
+  - rubocop-rspec_rails
+
+plugins:
+  - rubocop-rails
+  - rubocop-factory_bot
+
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  SuggestExtensions: false
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+    - 'log/**/*'
+
+# Rails specific settings
+Rails:
+  Enabled: true
+
+Rails/ReversibleMigration:
+  Exclude:
+    - 'db/migrate/20250725154840_add_not_null_constraints_to_organizations.rb'
+
+# Style settings
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# Metrics settings
+
+Metrics/ClassLength:
+  Max: 150
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'config/routes.rb'
+    - 'db/migrate/*.rb'
+
+# Layout settings
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'db/migrate/*.rb'
+
+# RSpec specific settings
+RSpec/ExampleLength:
+  Max: 15
+
+RSpec/MultipleExpectations:
+  Max: 10
+
+RSpec/NestedGroups:
+  Max: 4
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/ContextWording:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Max: 15
+
+RSpec/IndexedLet:
+  Enabled: false
+
+# Style settings for OpenStruct usage in use cases
+Style/OpenStructUse:
+  Exclude:
+    - 'app/usecases/base_use_case.rb'
+
+# Allow longer methods for complex business logic
+Metrics/MethodLength:
+  Max: 25
+  Exclude:
+    - 'app/usecases/**/*'
+    - 'app/models/assignment.rb'
+
+Metrics/AbcSize:
+  Max: 35
+  Exclude:
+    - 'app/usecases/**/*'
+    - 'app/models/assignment.rb'
+
+Metrics/CyclomaticComplexity:
+  Max: 15
+  Exclude:
+    - 'app/usecases/**/*'
+    - 'app/models/assignment.rb'
+
+Metrics/PerceivedComplexity:
+  Max: 15
+  Exclude:
+    - 'app/usecases/**/*'
+    - 'app/models/assignment.rb'
+
+Metrics/ParameterLists:
+  Max: 8
+  Exclude:
+    - 'app/usecases/**/*'
+
+# Allow variable numbers in tests for day names
+Naming/VariableNumber:
+  AllowedIdentifiers:
+    - 'day_1'
+    - 'day_3'
+    - 'day_6'

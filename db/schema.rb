@@ -10,17 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_25_154840) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
   create_table "assignments", force: :cascade do |t|
     t.integer "project_id", null: false
     t.integer "member_id", null: false
     t.date "start_date", null: false
-    t.date "end_date", null: false
+    t.date "end_date"
     t.decimal "allocation_percentage", precision: 5, scale: 1
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "confirmed", null: false
     t.index ["member_id"], name: "index_assignments_on_member_id"
     t.index ["project_id"], name: "index_assignments_on_project_id"
+    t.index ["status"], name: "index_assignments_on_status"
   end
 
   create_table "member_skills", force: :cascade do |t|

@@ -32,6 +32,15 @@ This is a minimal Rails 8.0.2 application called "Assignman" using PostgreSQL as
 - `bundle exec rspec spec/requests/` - Run request specs
 - `bin/rails test` - Run Rails default tests (if any exist)
 
+### Code Quality
+- `bundle exec rubocop` - Run RuboCop static analysis
+- `bundle exec rubocop --autocorrect` - Auto-fix RuboCop violations
+- `bundle exec rubocop --autocorrect-all` - Auto-fix all RuboCop violations (including unsafe)
+
+### Use Cases
+- `bundle exec rspec spec/usecases/` - Run all use case tests
+- Use cases are located in `app/usecases/` with corresponding specs in `spec/usecases/`
+
 ### Maintenance
 - `bin/rails log:clear` - Clear log files
 - `bin/rails tmp:clear` - Clear temporary files
@@ -74,6 +83,15 @@ This is a minimal Rails 8.0.2 application called "Assignman" using PostgreSQL as
 - **Explicit over implicit**: Use clear `expect(user.errors[:email]).to include("can't be blank")` instead of `should validate_presence_of(:email)`
 - **Readable test intentions**: Each test should clearly show what is being tested and what the expected outcome is
 - **No magic DSL**: Avoid test DSLs that obscure the actual behavior being tested
+
+### Code Quality Standards
+- **RuboCop** for static code analysis with Rails and RSpec extensions
+- **Configuration**: `.rubocop.yml` with Rails-specific rules and relaxed RSpec constraints
+- **Key Settings**:
+  - Line length: 120 characters
+  - Method length: 15 lines max
+  - Disabled rules: Documentation, FrozenStringLiteral, RSpec/LetSetup, RSpec/ContextWording
+  - RSpec MultipleExpectations: 10 max (for comprehensive API tests)
 
 ### Generator Configuration
 Rails generators are configured to:
@@ -188,6 +206,48 @@ Assignman is a modern, visual SaaS platform designed to solve resource allocatio
 - V1.2: Calendar integration (Google/Outlook) and Slack notifications  
 - V1.3: Time tracking and project cost analysis
 - V1.4: Talent management features (goals, evaluations, career paths)
+
+## Implemented Use Cases
+
+The application implements four core use cases following the domain model specified in DATA_STRUCTURE.md:
+
+### 1. CreateRoughProjectAssignment
+**Purpose**: プロジェクト全体計画の策定 (Project Overall Planning)
+- **Actor**: Administrator (User)
+- **Input**: project, member, start_date, end_date, allocation_percentage, administrator
+- **Behavior**: Creates rough assignments for planning purposes (not visible to members)
+- **Validations**: Organization consistency, no overlapping rough assignments
+- **Note**: Skips capacity and project period validations for planning flexibility
+
+### 2. ConfirmRoughProjectAssignment  
+**Purpose**: メンバーへのアサインの確定と通知 (Confirm and Notify Member Assignments)
+- **Actor**: Administrator (User)
+- **Input**: rough_assignment, administrator
+- **Behavior**: Converts rough assignment to confirmed status (visible to members)
+- **Validations**: Capacity constraints, authorization checks
+- **Note**: Enforces all business rules when confirming assignments
+
+### 3. CreateOngoingAssignment
+**Purpose**: 定常業務の割り当て (Ongoing Work Assignment)
+- **Actor**: Administrator (User)  
+- **Input**: project, member, start_date, end_date (optional), allocation_percentage, administrator
+- **Behavior**: Creates ongoing assignments for continuous work (immediately confirmed)
+- **Validations**: Capacity constraints, supports indefinite end dates
+- **Note**: Bypasses planning phase - directly creates confirmed assignments
+
+### 4. GetMemberSchedule
+**Purpose**: 自身の確定スケジュールの確認 (View Confirmed Schedule)
+- **Actor**: Member or Administrator
+- **Input**: member, start_date, end_date, viewer
+- **Behavior**: Returns confirmed and ongoing assignments (excludes rough assignments)
+- **Authorization**: Members can view own schedule, Administrators can view any member in their organization
+- **Output**: Daily schedule with assignments, allocation totals, and summary statistics
+
+### Use Case Architecture
+- **Base Class**: `BaseUseCase` with standardized error handling and result objects
+- **Error Types**: ValidationError, AuthorizationError, NotFoundError, Error
+- **Result Pattern**: Returns success/failure objects with data or error information
+- **Testing**: Comprehensive unit tests with explicit expectations (no DSL matchers)
 
 ## Docker Configuration
 

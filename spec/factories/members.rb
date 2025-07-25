@@ -5,9 +5,9 @@ FactoryBot.define do
     organization
 
     trait :with_role do
-      association :role
+      role
     end
-    
+
     trait :with_skills do
       after(:create) do |member|
         create_list(:member_skill, 2, member: member)
