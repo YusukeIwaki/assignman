@@ -42,37 +42,36 @@ RSpec.describe GetMemberSchedule do
     end
 
     context 'with assignments' do
-      let!(:project1) do
-        create(:project, organization: organization, name: 'Project Alpha',
-                         start_date: start_date - 1.week, end_date: end_date + 1.week)
+      let!(:standard_project) do
+        create(:standard_project, organization: organization, name: 'Project Alpha',
+                                  start_date: start_date - 1.week, end_date: end_date + 1.week)
       end
-      let!(:project2) do
-        create(:project, organization: organization, name: 'Project Beta',
-                         start_date: start_date - 1.week, end_date: end_date + 1.week)
+      let!(:ongoing_project) do
+        create(:ongoing_project, organization: organization, name: 'Project Beta')
       end
 
-      let!(:confirmed_assignment) do
-        create(:assignment, :confirmed,
+      let!(:detailed_assignment) do
+        create(:detailed_project_assignment,
                member: member,
-               project: project1,
+               standard_project: standard_project,
                start_date: start_date,
                end_date: start_date + 3.days,
                allocation_percentage: 50.0)
       end
 
       let!(:ongoing_assignment) do
-        create(:assignment, :ongoing,
+        create(:ongoing_assignment,
                member: member,
-               project: project2,
+               ongoing_project: ongoing_project,
                start_date: start_date + 2.days,
                end_date: nil,
                allocation_percentage: 30.0)
       end
 
       let!(:rough_assignment) do
-        create(:assignment, :rough,
+        create(:rough_project_assignment,
                member: member,
-               project: project1,
+               standard_project: standard_project,
                start_date: start_date + 5.days,
                end_date: start_date + 6.days,
                allocation_percentage: 25.0)
@@ -113,11 +112,10 @@ RSpec.describe GetMemberSchedule do
         assignment_info = result.data[:daily_schedule]
                                 .find { |d| d[:date] == start_date }[:assignments].first
 
-        expect(assignment_info[:id]).to eq(confirmed_assignment.id)
+        expect(assignment_info[:id]).to eq(detailed_assignment.id)
         expect(assignment_info[:project_name]).to eq('Project Alpha')
-        expect(assignment_info[:project_id]).to eq(project1.id)
+        expect(assignment_info[:project_id]).to eq(standard_project.id)
         expect(assignment_info[:allocation_percentage]).to eq(50.0)
-        expect(assignment_info[:status]).to eq('confirmed')
         expect(assignment_info[:start_date]).to eq(start_date)
         expect(assignment_info[:end_date]).to eq(start_date + 3.days)
       end

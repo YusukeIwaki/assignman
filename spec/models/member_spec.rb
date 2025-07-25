@@ -45,8 +45,16 @@ RSpec.describe Member do
       expect(member).to respond_to(:role)
     end
 
-    it 'has many assignments' do
-      expect(member).to respond_to(:assignments)
+    it 'has many rough_project_assignments' do
+      expect(member).to respond_to(:rough_project_assignments)
+    end
+
+    it 'has many detailed_project_assignments' do
+      expect(member).to respond_to(:detailed_project_assignments)
+    end
+
+    it 'has many ongoing_assignments' do
+      expect(member).to respond_to(:ongoing_assignments)
     end
 
     it 'has many skills through member_skills' do

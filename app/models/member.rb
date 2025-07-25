@@ -21,8 +21,11 @@
 class Member < ApplicationRecord
   belongs_to :organization
   belongs_to :role, optional: true
-  has_many :assignments, dependent: :destroy
-  has_many :projects, through: :assignments
+  has_many :rough_project_assignments, dependent: :destroy
+  has_many :detailed_project_assignments, dependent: :destroy
+  has_many :ongoing_assignments, dependent: :destroy
+  has_many :standard_projects, through: :detailed_project_assignments
+  has_many :ongoing_projects, through: :ongoing_assignments
   has_many :member_skills, dependent: :destroy
   has_many :skills, through: :member_skills
 
@@ -30,9 +33,15 @@ class Member < ApplicationRecord
   validates :capacity, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 200 }
 
   def current_allocation(date = Date.current)
-    assignments.joins(:project)
-               .where('assignments.start_date <= ? AND assignments.end_date >= ?', date, date)
-               .sum(:allocation_percentage)
+    detailed_allocation = detailed_project_assignments
+                          .where('start_date <= ? AND end_date >= ?', date, date)
+                          .sum(:allocation_percentage)
+
+    ongoing_allocation = ongoing_assignments
+                         .where('start_date <= ? AND (end_date IS NULL OR end_date >= ?)', date, date)
+                         .sum(:allocation_percentage)
+
+    detailed_allocation + ongoing_allocation
   end
 
   def available_capacity(date = Date.current)

@@ -25,6 +25,8 @@ Rails:
 Rails/ReversibleMigration:
   Exclude:
     - 'db/migrate/20250725154840_add_not_null_constraints_to_organizations.rb'
+    - 'db/migrate/20250725224908_refactor_assignment_into_multiple_models.rb'
+    - 'db/migrate/20250725225028_refactor_project_into_multiple_models.rb'
 
 # Style settings
 Style/Documentation:
@@ -83,6 +85,7 @@ Metrics/MethodLength:
   Exclude:
     - 'app/usecases/**/*'
     - 'app/models/assignment.rb'
+    - 'db/migrate/**/*'
 
 Metrics/AbcSize:
   Max: 35

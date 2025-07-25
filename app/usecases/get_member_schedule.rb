@@ -7,12 +7,20 @@ class GetMemberSchedule < BaseUseCase
       return failure(BaseUseCase::AuthorizationError.new('Viewer cannot access this member schedule'))
     end
 
-    # Get confirmed and ongoing assignments only (no rough assignments)
-    assignments = member.assignments
-                        .where(status: %w[confirmed ongoing])
-                        .where('start_date <= ? AND (end_date >= ? OR end_date IS NULL)', end_date, start_date)
-                        .includes(:project)
-                        .order(:start_date)
+    # Get detailed assignments
+    detailed_assignments = member.detailed_project_assignments
+                                 .where('start_date <= ? AND end_date >= ?', end_date, start_date)
+                                 .includes(:standard_project)
+                                 .order(:start_date)
+
+    # Get ongoing assignments
+    ongoing_assignments = member.ongoing_assignments
+                                .where('start_date <= ? AND (end_date >= ? OR end_date IS NULL)', end_date, start_date)
+                                .includes(:ongoing_project)
+                                .order(:start_date)
+
+    # Combine all assignments
+    assignments = detailed_assignments + ongoing_assignments
 
     # Group assignments by date for calendar view
     schedule_data = build_schedule_data(member, assignments, start_date, end_date)
@@ -65,12 +73,14 @@ class GetMemberSchedule < BaseUseCase
       (assignment_start..assignment_end).each do |date|
         next unless daily_schedule[date]
 
+        project = assignment.respond_to?(:standard_project) ? assignment.standard_project : assignment.ongoing_project
+
         assignment_info = {
           id: assignment.id,
-          project_name: assignment.project.name,
-          project_id: assignment.project.id,
+          project_name: project.name,
+          project_id: project.id,
+          project_type: assignment.class.name.underscore,
           allocation_percentage: assignment.allocation_percentage,
-          status: assignment.status,
           start_date: assignment.start_date,
           end_date: assignment.end_date
         }

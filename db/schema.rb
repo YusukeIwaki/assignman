@@ -10,19 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
-  create_table "assignments", force: :cascade do |t|
-    t.integer "project_id", null: false
+ActiveRecord::Schema[8.0].define(version: 2025_07_25_225028) do
+  create_table "detailed_project_assignments", force: :cascade do |t|
     t.integer "member_id", null: false
     t.date "start_date", null: false
-    t.date "end_date"
-    t.decimal "allocation_percentage", precision: 5, scale: 1
+    t.date "end_date", null: false
+    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "status", default: "confirmed", null: false
-    t.index ["member_id"], name: "index_assignments_on_member_id"
-    t.index ["project_id"], name: "index_assignments_on_project_id"
-    t.index ["status"], name: "index_assignments_on_status"
+    t.integer "standard_project_id"
+    t.index ["member_id"], name: "index_detailed_project_assignments_on_member_id"
+    t.index ["standard_project_id"], name: "index_detailed_project_assignments_on_standard_project_id"
   end
 
   create_table "member_skills", force: :cascade do |t|
@@ -45,25 +43,35 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
     t.index ["organization_id"], name: "index_members_on_organization_id"
   end
 
+  create_table "ongoing_assignments", force: :cascade do |t|
+    t.integer "member_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date"
+    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "ongoing_project_id"
+    t.index ["member_id"], name: "index_ongoing_assignments_on_member_id"
+    t.index ["ongoing_project_id"], name: "index_ongoing_assignments_on_ongoing_project_id"
+  end
+
+  create_table "ongoing_projects", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name", null: false
+    t.string "status", default: "active", null: false
+    t.string "client_name"
+    t.decimal "budget", precision: 15, scale: 2
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_ongoing_projects_on_organization_id"
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string "name", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_organizations_on_name", unique: true
-  end
-
-  create_table "projects", force: :cascade do |t|
-    t.integer "organization_id", null: false
-    t.string "name", null: false
-    t.string "client_name"
-    t.date "start_date", null: false
-    t.date "end_date", null: false
-    t.string "status", default: "tentative", null: false
-    t.decimal "budget", precision: 15, scale: 2
-    t.text "notes"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["organization_id"], name: "index_projects_on_organization_id"
   end
 
   create_table "roles", force: :cascade do |t|
@@ -75,6 +83,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
     t.index ["organization_id"], name: "index_roles_on_organization_id"
   end
 
+  create_table "rough_project_assignments", force: :cascade do |t|
+    t.integer "member_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "standard_project_id"
+    t.index ["member_id"], name: "index_rough_project_assignments_on_member_id"
+    t.index ["standard_project_id"], name: "index_rough_project_assignments_on_standard_project_id"
+  end
+
   create_table "skills", force: :cascade do |t|
     t.integer "organization_id", null: false
     t.string "name", null: false
@@ -82,6 +102,20 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
     t.datetime "updated_at", null: false
     t.index ["organization_id", "name"], name: "index_skills_on_organization_id_and_name", unique: true
     t.index ["organization_id"], name: "index_skills_on_organization_id"
+  end
+
+  create_table "standard_projects", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.string "name", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.string "status", default: "tentative", null: false
+    t.string "client_name"
+    t.decimal "budget", precision: 15, scale: 2
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_standard_projects_on_organization_id"
   end
 
   create_table "user_credentials", force: :cascade do |t|
@@ -111,14 +145,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_25_161259) do
     t.index ["organization_id"], name: "index_users_on_organization_id"
   end
 
-  add_foreign_key "assignments", "members"
-  add_foreign_key "assignments", "projects"
+  add_foreign_key "detailed_project_assignments", "members"
+  add_foreign_key "detailed_project_assignments", "standard_projects"
   add_foreign_key "member_skills", "members"
   add_foreign_key "member_skills", "skills"
   add_foreign_key "members", "organizations"
-  add_foreign_key "projects", "organizations"
+  add_foreign_key "ongoing_assignments", "members"
+  add_foreign_key "ongoing_assignments", "ongoing_projects"
+  add_foreign_key "ongoing_projects", "organizations"
   add_foreign_key "roles", "organizations"
+  add_foreign_key "rough_project_assignments", "members"
+  add_foreign_key "rough_project_assignments", "standard_projects"
   add_foreign_key "skills", "organizations"
+  add_foreign_key "standard_projects", "organizations"
   add_foreign_key "user_credentials", "users"
   add_foreign_key "user_profiles", "users"
 end

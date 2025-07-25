@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: projects
+# Table name: standard_projects
 #
 #  id              :integer          not null, primary key
 #  budget          :decimal(15, 2)
@@ -16,26 +16,27 @@
 #
 # Indexes
 #
-#  index_projects_on_organization_id  (organization_id)
+#  index_standard_projects_on_organization_id  (organization_id)
 #
 # Foreign Keys
 #
 #  organization_id  (organization_id => organizations.id)
 #
-class Project < ApplicationRecord
+class StandardProject < ApplicationRecord
   belongs_to :organization
-  has_many :assignments, dependent: :destroy
-  has_many :members, through: :assignments
+  has_many :rough_project_assignments, dependent: :destroy
+  has_many :detailed_project_assignments, dependent: :destroy
 
   validates :name, presence: true
-  validates :start_date, :end_date, presence: true
+  validates :start_date, presence: true
+  validates :end_date, presence: true
   validates :status, presence: true, inclusion: { in: %w[tentative confirmed archived] }
   validate :end_date_after_start_date
-
-  enum :status, { tentative: 'tentative', confirmed: 'confirmed', archived: 'archived' }
+  validate :budget_is_positive
 
   scope :active, -> { where.not(status: 'archived') }
-  scope :for_date_range, ->(start_date, end_date) { where('start_date <= ? AND end_date >= ?', end_date, start_date) }
+  scope :confirmed, -> { where(status: 'confirmed') }
+  scope :tentative, -> { where(status: 'tentative') }
 
   private
 
@@ -43,5 +44,11 @@ class Project < ApplicationRecord
     return unless start_date && end_date
 
     errors.add(:end_date, 'must be after start date') if end_date < start_date
+  end
+
+  def budget_is_positive
+    return unless budget
+
+    errors.add(:budget, 'must be positive') if budget <= 0
   end
 end
