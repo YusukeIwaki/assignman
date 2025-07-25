@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: assignments
+#
+#  id                    :integer          not null, primary key
+#  allocation_percentage :decimal(5, 1)
+#  end_date              :date
+#  start_date            :date             not null
+#  status                :string           default("confirmed"), not null
+#  created_at            :datetime         not null
+#  updated_at            :datetime         not null
+#  member_id             :integer          not null
+#  project_id            :integer          not null
+#
+# Indexes
+#
+#  index_assignments_on_member_id   (member_id)
+#  index_assignments_on_project_id  (project_id)
+#  index_assignments_on_status      (status)
+#
+# Foreign Keys
+#
+#  member_id   (member_id => members.id)
+#  project_id  (project_id => projects.id)
+#
 class Assignment < ApplicationRecord
   belongs_to :project
   belongs_to :member
@@ -10,6 +35,7 @@ class Assignment < ApplicationRecord
   validate :dates_within_project_period
   validate :member_capacity_not_exceeded
 
+  attribute :status, :string, default: 'confirmed'
   enum :status, { rough: 'rough', confirmed: 'confirmed', ongoing: 'ongoing' }
 
   scope :for_date_range, ->(start_date, end_date) { where('start_date <= ? AND end_date >= ?', end_date, start_date) }

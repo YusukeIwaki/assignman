@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: members
+#
+#  id              :integer          not null, primary key
+#  capacity        :decimal(5, 1)
+#  name            :string           not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  organization_id :integer          not null
+#  role_id         :integer
+#
+# Indexes
+#
+#  index_members_on_organization_id  (organization_id)
+#
+# Foreign Keys
+#
+#  organization_id  (organization_id => organizations.id)
+#
 class Member < ApplicationRecord
   belongs_to :organization
   belongs_to :role, optional: true
