@@ -12,7 +12,7 @@ require "action_controller/railtie"
 # require "action_text/engine"
 require "action_view/railtie"
 # require "action_cable/engine"
-require "rails/test_unit/railtie"
+# require "rails/test_unit/railtie"  # Commented out since we use RSpec
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -38,5 +38,16 @@ module Assignman
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+    
+    # Configure generators to use RSpec instead of Test::Unit
+    config.generators do |g|
+      g.test_framework :rspec
+      g.fixture_replacement :factory_bot, dir: 'spec/factories'
+      g.view_specs false
+      g.helper_specs false
+      g.stylesheets false
+      g.javascripts false
+      g.helper false
+    end
   end
 end

@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+CLAUDE.md
+
+# Ruby
+.bundle
+vendor/bundle
+
+# Rails
+log/*
+tmp/*
+storage/*
+public/assets
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode
+.idea
+
+# macOS
+.DS_Store
+
+# Test files
+spec/
+test/
+coverage/
+
+# Development dependencies
+node_modules/
