@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :user do
-    organization_id { 1 }
+    organization
     
     after(:create) do |user|
       create(:user_credential, user: user)

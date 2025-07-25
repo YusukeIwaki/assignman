@@ -82,6 +82,41 @@ Rails generators are configured to:
 - Skip view specs, helper specs, stylesheets, and javascripts
 - Not generate test/ directory files
 
+## Development Preferences & Philosophy
+
+### Code Quality & Testing Preferences
+- **Explicit over implicit testing**: Prefer `expect(user.errors[:email]).to include("can't be blank")` over DSL matchers like `should validate_presence_of(:email)`
+- **RSpec-only environment**: Never use Test::Unit, fixtures, or test/ directory
+- **Clean generators**: Rails generators should only create RSpec specs and FactoryBot factories
+- **Manual test verification**: Always run tests after major changes to ensure nothing breaks
+
+### Data Model Design Preferences  
+- **Separation of concerns**: Split models by responsibility (User/UserCredential/UserProfile pattern)
+- **Authentication vs Authorization separation**: Keep auth data separate from permission data
+- **Explicit relationships**: Use clear `has_one`/`belongs_to` relationships with proper validations
+
+### API Design Preferences
+- **API-first architecture**: All functionality exposed through well-designed REST endpoints
+- **Consistent response format**: Use structured JSON with `total`, `offset`, `data` for collections
+- **Proper HTTP status codes**: 200 for success, 404 for not found, 422 for validation errors
+- **Request specs over controller specs**: Test the full HTTP request/response cycle
+
+### Infrastructure Preferences
+- **Docker for production**: Always provide Docker setup for consistent deployments
+- **Multi-environment database**: SQLite for dev/test, PostgreSQL for production
+- **Latest Ruby**: Use newest stable Ruby version (currently 3.4)
+- **Minimal Rails**: Only include necessary Rails components, disable unused features
+
+### Documentation Preferences
+- **Comprehensive CLAUDE.md**: Document all setup, commands, and architectural decisions
+- **Explicit data structure docs**: Maintain DATA_STRUCTURE.md with clear entity relationships
+- **No redundant docs**: Don't create README or other docs unless explicitly requested
+
+### Git Preferences
+- **Descriptive commit messages**: Clear summary with detailed bullet points of changes
+- **Include generation signature**: Always add "🤖 Generated with [Claude Code]" footer
+- **Logical grouping**: Commit related changes together, not piecemeal
+
 ## Product Specification: Assignman
 
 ### Vision and Problem Statement

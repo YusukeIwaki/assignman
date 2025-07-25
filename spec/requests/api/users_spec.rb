@@ -17,9 +17,10 @@ RSpec.describe 'Api::Users', type: :request do
     end
     
     context 'when users exist' do
+      let(:organization) { create(:organization) }
       let!(:users) do
         (1..25).map do |i|
-          user = create(:user)
+          user = create(:user, organization: organization)
           user.user_credential.update!(email: "user#{i}@example.com")
           user.user_profile.update!(name: "User #{i}")
           user

@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   validates :organization_id, presence: true
   
+  belongs_to :organization
   has_one :user_credential, dependent: :destroy
   has_one :user_profile, dependent: :destroy
   
