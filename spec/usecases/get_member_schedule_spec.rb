@@ -2,10 +2,10 @@ require 'rails_helper'
 
 RSpec.describe GetMemberSchedule do
   let(:organization) { create(:organization) }
-  let(:member) { create(:member, organization: organization, name: 'John Doe') }
+  let(:member) { create(:member, organization: organization, name: 'John Doe', standard_working_hours: 40.0) }
   let(:admin) { create(:admin, organization: organization) }
-  let(:start_date) { Date.current }
-  let(:end_date) { Date.current + 1.week }
+  let(:start_date) { Date.new(2024, 1, 8) } # Monday
+  let(:end_date) { Date.new(2024, 1, 15) } # Next Monday
 
   describe '#call' do
     let(:valid_params) do
@@ -36,15 +36,20 @@ RSpec.describe GetMemberSchedule do
         expect(result.success?).to be true
         expect(result.data[:daily_schedule].length).to eq(8) # 1 week + 1 day
         expect(result.data[:summary][:total_assignments]).to eq(0)
-        expect(result.data[:summary][:average_allocation]).to eq(0.0)
-        expect(result.data[:summary][:max_allocation]).to eq(0.0)
+        expect(result.data[:summary][:average_hours]).to eq(0.0)
+        expect(result.data[:summary][:max_hours]).to eq(0.0)
       end
     end
 
     context 'with assignments' do
+      around do |example|
+        travel_to Date.new(2024, 1, 1) do
+          example.run
+        end
+      end
       let!(:standard_project) do
         create(:standard_project, organization: organization, name: 'Project Alpha',
-                                  start_date: start_date - 1.week, end_date: end_date + 1.week)
+                                  start_date: Date.new(2024, 1, 1), end_date: Date.new(2024, 1, 31))
       end
       let!(:ongoing_project) do
         create(:ongoing_project, organization: organization, name: 'Project Beta')
@@ -54,27 +59,27 @@ RSpec.describe GetMemberSchedule do
         create(:detailed_project_assignment,
                member: member,
                standard_project: standard_project,
-               start_date: start_date,
-               end_date: start_date + 3.days,
-               allocation_percentage: 50.0)
+               start_date: Date.new(2024, 1, 8),    # Monday
+               end_date: Date.new(2024, 1, 10),     # Wednesday
+               scheduled_hours: 6.0)  # 2 hours per day * 3 days
       end
 
       let!(:ongoing_assignment) do
         create(:ongoing_assignment,
                member: member,
                ongoing_project: ongoing_project,
-               start_date: start_date + 2.days,
+               start_date: Date.new(2024, 1, 10),   # Wednesday
                end_date: nil,
-               allocation_percentage: 30.0)
+               weekly_scheduled_hours: 10.0)  # 2 hours per day
       end
 
       let!(:rough_assignment) do
         create(:rough_project_assignment,
                member: member,
                standard_project: standard_project,
-               start_date: start_date + 5.days,
-               end_date: start_date + 6.days,
-               allocation_percentage: 25.0)
+               start_date: Date.new(2024, 1, 13),   # Saturday
+               end_date: Date.new(2024, 1, 14),     # Sunday
+               scheduled_hours: 10.0)
       end
 
       it 'includes confirmed and ongoing assignments but excludes rough assignments' do
@@ -84,40 +89,41 @@ RSpec.describe GetMemberSchedule do
         expect(result.data[:summary][:total_assignments]).to eq(2) # confirmed + ongoing, not rough
 
         # Check specific days
-        day_1 = result.data[:daily_schedule].find { |d| d[:date] == start_date }
-        expect(day_1[:assignments].length).to eq(1)
-        expect(day_1[:assignments].first[:project_name]).to eq('Project Alpha')
-        expect(day_1[:total_allocation]).to eq(50.0)
+        monday = result.data[:daily_schedule].find { |d| d[:date] == Date.new(2024, 1, 8) }
+        expect(monday[:assignments].length).to eq(1)
+        expect(monday[:assignments].first[:project_name]).to eq('Project Alpha')
+        expect(monday[:total_hours]).to eq(2.0) # 6 hours / 3 days
 
-        day_3 = result.data[:daily_schedule].find { |d| d[:date] == start_date + 2.days }
-        expect(day_3[:assignments].length).to eq(2) # Both assignments overlap
-        expect(day_3[:total_allocation]).to eq(80.0) # 50% + 30%
+        wednesday = result.data[:daily_schedule].find { |d| d[:date] == Date.new(2024, 1, 10) }
+        expect(wednesday[:assignments].length).to eq(2) # Both assignments overlap
+        expect(wednesday[:total_hours]).to eq(4.0) # 2.0 from detailed + 2.0 from ongoing
 
-        day_6 = result.data[:daily_schedule].find { |d| d[:date] == start_date + 5.days }
-        expect(day_6[:assignments].length).to eq(1) # Only ongoing, not rough
-        expect(day_6[:assignments].first[:project_name]).to eq('Project Beta')
-        expect(day_6[:total_allocation]).to eq(30.0)
+        saturday = result.data[:daily_schedule].find { |d| d[:date] == Date.new(2024, 1, 13) }
+        expect(saturday[:assignments].length).to eq(1) # Only ongoing (weekends still show ongoing)
+        expect(saturday[:assignments].first[:project_name]).to eq('Project Beta')
+        expect(saturday[:total_hours]).to eq(0.0) # No hours on weekends
       end
 
       it 'calculates summary statistics correctly' do
         result = described_class.call(**valid_params)
 
-        expect(result.data[:summary][:max_allocation]).to eq(80.0)
-        expect(result.data[:summary][:average_allocation]).to be > 0
+        expect(result.data[:summary][:max_hours]).to be > 0
+        expect(result.data[:summary][:average_hours]).to be > 0
       end
 
       it 'includes assignment details' do
         result = described_class.call(**valid_params)
 
-        assignment_info = result.data[:daily_schedule]
-                                .find { |d| d[:date] == start_date }[:assignments].first
+        monday_schedule = result.data[:daily_schedule]
+                                .find { |d| d[:date] == Date.new(2024, 1, 8) }
+        assignment_info = monday_schedule[:assignments].first
 
         expect(assignment_info[:id]).to eq(detailed_assignment.id)
         expect(assignment_info[:project_name]).to eq('Project Alpha')
         expect(assignment_info[:project_id]).to eq(standard_project.id)
-        expect(assignment_info[:allocation_percentage]).to eq(50.0)
-        expect(assignment_info[:start_date]).to eq(start_date)
-        expect(assignment_info[:end_date]).to eq(start_date + 3.days)
+        expect(assignment_info[:daily_hours]).to eq(2.0)
+        expect(assignment_info[:start_date]).to eq(Date.new(2024, 1, 8))
+        expect(assignment_info[:end_date]).to eq(Date.new(2024, 1, 10))
       end
     end
 
@@ -155,8 +161,8 @@ RSpec.describe GetMemberSchedule do
       end
 
       it 'fails when end_date is before start_date' do
-        result = described_class.call(**valid_params, start_date: Date.current + 1.week,
-                                                      end_date: Date.current)
+        result = described_class.call(**valid_params, start_date: Date.new(2024, 1, 15),
+                                                      end_date: Date.new(2024, 1, 8))
 
         expect(result.failure?).to be true
         expect(result.error).to be_a(BaseUseCase::ValidationError)

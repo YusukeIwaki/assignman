@@ -1,6 +1,6 @@
 class CreateRoughProjectAssignment < BaseUseCase
-  def call(standard_project:, member:, start_date:, end_date:, allocation_percentage:, admin:)
-    validate_inputs(standard_project, member, start_date, end_date, allocation_percentage, admin)
+  def call(standard_project:, member:, start_date:, end_date:, scheduled_hours:, admin:)
+    validate_inputs(standard_project, member, start_date, end_date, scheduled_hours, admin)
 
     # Check if admin has permission to manage this project
     unless can_manage_project?(admin, standard_project)
@@ -18,7 +18,7 @@ class CreateRoughProjectAssignment < BaseUseCase
       member: member,
       start_date: start_date,
       end_date: end_date,
-      allocation_percentage: allocation_percentage
+      scheduled_hours: scheduled_hours
     )
 
     if assignment.save
@@ -34,12 +34,12 @@ class CreateRoughProjectAssignment < BaseUseCase
 
   private
 
-  def validate_inputs(standard_project, member, start_date, end_date, allocation_percentage, admin)
+  def validate_inputs(standard_project, member, start_date, end_date, scheduled_hours, admin)
     raise BaseUseCase::ValidationError, 'Project is required' unless standard_project
     raise BaseUseCase::ValidationError, 'Member is required' unless member
     raise BaseUseCase::ValidationError, 'Start date is required' unless start_date
     raise BaseUseCase::ValidationError, 'End date is required' unless end_date
-    raise BaseUseCase::ValidationError, 'Allocation percentage is required' unless allocation_percentage
+    raise BaseUseCase::ValidationError, 'Scheduled hours is required' unless scheduled_hours
     raise BaseUseCase::ValidationError, 'Admin is required' unless admin
 
     unless standard_project.organization_id == member.organization_id

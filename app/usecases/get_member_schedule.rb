@@ -64,7 +64,8 @@ class GetMemberSchedule < BaseUseCase
       daily_schedule[date] = {
         date: date,
         assignments: [],
-        total_allocation: 0.0
+        total_hours: 0.0,
+        is_weekend: date.saturday? || date.sunday?
       }
     end
 
@@ -78,18 +79,28 @@ class GetMemberSchedule < BaseUseCase
 
         project = assignment.respond_to?(:standard_project) ? assignment.standard_project : assignment.ongoing_project
 
+        # Calculate daily hours based on assignment type
+        daily_hours = if assignment.is_a?(DetailedProjectAssignment)
+                        assignment.scheduled_hours / assignment.working_days_count
+                      elsif assignment.is_a?(OngoingAssignment)
+                        assignment.weekly_scheduled_hours / 5.0
+                      else
+                        0
+                      end
+
         assignment_info = {
           id: assignment.id,
           project_name: project.name,
           project_id: project.id,
           project_type: assignment.class.name.underscore,
-          allocation_percentage: assignment.allocation_percentage,
+          scheduled_hours: assignment.respond_to?(:scheduled_hours) ? assignment.scheduled_hours : assignment.weekly_scheduled_hours,
+          daily_hours: daily_hours,
           start_date: assignment.start_date,
           end_date: assignment.end_date
         }
 
         daily_schedule[date][:assignments] << assignment_info
-        daily_schedule[date][:total_allocation] += assignment.allocation_percentage
+        daily_schedule[date][:total_hours] += daily_hours unless date.saturday? || date.sunday?
       end
     end
 
@@ -97,27 +108,39 @@ class GetMemberSchedule < BaseUseCase
     {
       member_id: member.id,
       member_name: member.name,
+      standard_working_hours: member.standard_working_hours,
       start_date: start_date,
       end_date: end_date,
       daily_schedule: daily_schedule.values,
       summary: {
         total_assignments: assignments.count,
-        average_allocation: calculate_average_allocation(daily_schedule),
-        max_allocation: calculate_max_allocation(daily_schedule)
+        average_hours: calculate_average_hours(daily_schedule),
+        max_hours: calculate_max_hours(daily_schedule),
+        total_scheduled_hours: calculate_total_scheduled_hours(daily_schedule)
       }
     }
   end
 
-  def calculate_average_allocation(daily_schedule)
+  def calculate_average_hours(daily_schedule)
     return 0.0 if daily_schedule.empty?
 
-    total = daily_schedule.values.sum { |day| day[:total_allocation] }
-    (total / daily_schedule.size).round(1)
+    working_days = daily_schedule.values.reject { |day| day[:is_weekend] }
+    return 0.0 if working_days.empty?
+
+    total = working_days.sum { |day| day[:total_hours] }
+    (total / working_days.size).round(1)
   end
 
-  def calculate_max_allocation(daily_schedule)
+  def calculate_max_hours(daily_schedule)
     return 0.0 if daily_schedule.empty?
 
-    daily_schedule.values.pluck(:total_allocation).max
+    working_days = daily_schedule.values.reject { |day| day[:is_weekend] }
+    return 0.0 if working_days.empty?
+
+    working_days.pluck(:total_hours).max
+  end
+
+  def calculate_total_scheduled_hours(daily_schedule)
+    daily_schedule.values.sum { |day| day[:total_hours] }
   end
 end

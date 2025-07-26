@@ -6,7 +6,7 @@ FactoryBot.define do
     end_date { Date.current + 3.months }
     status { 'tentative' }
     client_name { 'Example Client' }
-    budget { 1_000_000 }
+    budget_hours { 160.0 }
     notes { 'Project notes' }
 
     trait :confirmed do

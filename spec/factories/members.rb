@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :member do
     sequence(:name) { |n| "Member #{n}" }
-    capacity { 100.0 }
+    standard_working_hours { 40.0 }
     organization
 
     trait :with_skills do

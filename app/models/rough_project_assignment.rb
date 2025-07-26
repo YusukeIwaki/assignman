@@ -2,14 +2,14 @@
 #
 # Table name: rough_project_assignments
 #
-#  id                    :integer          not null, primary key
-#  allocation_percentage :decimal(5, 1)    default(100.0), not null
-#  end_date              :date             not null
-#  start_date            :date             not null
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
-#  member_id             :integer          not null
-#  standard_project_id   :integer
+#  id                  :integer          not null, primary key
+#  end_date            :date             not null
+#  scheduled_hours     :decimal(5, 1)    not null
+#  start_date          :date             not null
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  member_id           :integer          not null
+#  standard_project_id :integer
 #
 # Indexes
 #
@@ -27,7 +27,7 @@ class RoughProjectAssignment < ApplicationRecord
 
   validates :start_date, presence: true
   validates :end_date, presence: true
-  validates :allocation_percentage, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 100 }
+  validates :scheduled_hours, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 999 }
   validate :end_date_after_start_date
   validate :no_overlapping_rough_assignments
 

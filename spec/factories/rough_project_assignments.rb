@@ -4,6 +4,6 @@ FactoryBot.define do
     member
     start_date { Date.current }
     end_date { Date.current + 1.month }
-    allocation_percentage { 100.0 }
+    scheduled_hours { 80.0 }
   end
 end

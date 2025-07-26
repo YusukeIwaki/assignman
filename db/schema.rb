@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
+ActiveRecord::Schema[8.0].define(version: 2025_07_26_090022) do
   create_table "admins", force: :cascade do |t|
     t.integer "organization_id", null: false
     t.datetime "created_at", null: false
@@ -24,7 +24,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
     t.integer "member_id", null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
-    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
+    t.decimal "scheduled_hours", precision: 5, scale: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "standard_project_id"
@@ -45,7 +45,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
   create_table "members", force: :cascade do |t|
     t.integer "organization_id", null: false
     t.string "name", null: false
-    t.decimal "capacity", precision: 5, scale: 1
+    t.decimal "standard_working_hours", precision: 5, scale: 1, default: "40.0", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["organization_id"], name: "index_members_on_organization_id"
@@ -55,7 +55,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
     t.integer "member_id", null: false
     t.date "start_date", null: false
     t.date "end_date"
-    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
+    t.decimal "weekly_scheduled_hours", precision: 5, scale: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "ongoing_project_id"
@@ -82,11 +82,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
     t.index ["name"], name: "index_organizations_on_name", unique: true
   end
 
+  create_table "project_plans", force: :cascade do |t|
+    t.integer "standard_project_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["standard_project_id"], name: "index_project_plans_on_standard_project_id", unique: true
+  end
+
   create_table "rough_project_assignments", force: :cascade do |t|
     t.integer "member_id", null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
-    t.decimal "allocation_percentage", precision: 5, scale: 1, default: "100.0", null: false
+    t.decimal "scheduled_hours", precision: 5, scale: 1, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "standard_project_id"
@@ -110,7 +117,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
     t.date "end_date", null: false
     t.string "status", default: "tentative", null: false
     t.string "client_name"
-    t.decimal "budget", precision: 15, scale: 2
+    t.decimal "budget_hours", precision: 10, scale: 1
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -154,6 +161,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_07_26_002813) do
   add_foreign_key "ongoing_assignments", "members"
   add_foreign_key "ongoing_assignments", "ongoing_projects"
   add_foreign_key "ongoing_projects", "organizations"
+  add_foreign_key "project_plans", "standard_projects"
   add_foreign_key "rough_project_assignments", "members"
   add_foreign_key "rough_project_assignments", "standard_projects"
   add_foreign_key "skills", "organizations"

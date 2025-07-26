@@ -9,9 +9,9 @@ RSpec.describe AcknowledgeDetailedProjectAssignment do
     create(:detailed_project_assignment,
            member: member,
            standard_project: standard_project,
-           start_date: Date.current,
-           end_date: Date.current + 1.week,
-           allocation_percentage: 50.0)
+           start_date: standard_project.start_date,
+           end_date: standard_project.start_date + 1.week,
+           scheduled_hours: 8.0)
   end
 
   describe '#call' do

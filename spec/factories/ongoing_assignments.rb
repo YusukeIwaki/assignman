@@ -4,7 +4,7 @@ FactoryBot.define do
     member
     start_date { Date.current }
     end_date { nil } # indefinite by default
-    allocation_percentage { 50.0 }
+    weekly_scheduled_hours { 20.0 }
 
     trait :with_end_date do
       end_date { Date.current + 6.months }

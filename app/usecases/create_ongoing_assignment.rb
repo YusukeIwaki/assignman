@@ -1,6 +1,6 @@
 class CreateOngoingAssignment < BaseUseCase
-  def call(ongoing_project:, member:, start_date:, end_date:, allocation_percentage:, admin:)
-    validate_inputs(ongoing_project, member, start_date, end_date, allocation_percentage, admin)
+  def call(ongoing_project:, member:, start_date:, end_date:, weekly_scheduled_hours:, admin:)
+    validate_inputs(ongoing_project, member, start_date, end_date, weekly_scheduled_hours, admin)
 
     # Check if admin has permission to manage this project
     unless can_manage_project?(admin, ongoing_project)
@@ -8,7 +8,7 @@ class CreateOngoingAssignment < BaseUseCase
     end
 
     # For ongoing assignments, we need to check capacity constraints immediately
-    if would_exceed_capacity?(member, start_date, end_date, allocation_percentage, nil)
+    if would_exceed_capacity?(member, start_date, end_date, weekly_scheduled_hours, nil)
       return failure(BaseUseCase::ValidationError.new('Assignment would exceed member capacity'))
     end
 
@@ -18,7 +18,7 @@ class CreateOngoingAssignment < BaseUseCase
       member: member,
       start_date: start_date,
       end_date: end_date,
-      allocation_percentage: allocation_percentage
+      weekly_scheduled_hours: weekly_scheduled_hours
     )
 
     if assignment.save
@@ -34,11 +34,11 @@ class CreateOngoingAssignment < BaseUseCase
 
   private
 
-  def validate_inputs(ongoing_project, member, start_date, _end_date, allocation_percentage, admin)
+  def validate_inputs(ongoing_project, member, start_date, _end_date, weekly_scheduled_hours, admin)
     raise BaseUseCase::ValidationError, 'Project is required' unless ongoing_project
     raise BaseUseCase::ValidationError, 'Member is required' unless member
     raise BaseUseCase::ValidationError, 'Start date is required' unless start_date
-    raise BaseUseCase::ValidationError, 'Allocation percentage is required' unless allocation_percentage
+    raise BaseUseCase::ValidationError, 'Weekly scheduled hours is required' unless weekly_scheduled_hours
     raise BaseUseCase::ValidationError, 'Admin is required' unless admin
 
     unless ongoing_project.organization_id == member.organization_id
@@ -59,28 +59,35 @@ class CreateOngoingAssignment < BaseUseCase
     admin.organization_id == ongoing_project.organization_id
   end
 
-  def would_exceed_capacity?(member, start_date, end_date, allocation_percentage, exclude_assignment_id)
+  def would_exceed_capacity?(member, start_date, end_date, weekly_scheduled_hours, exclude_assignment_id)
     # Determine the actual end date for checking - if nil, check for a reasonable period (e.g., 1 year)
     check_end_date = end_date || (start_date + 1.year)
+    daily_capacity = member.standard_working_hours / 5.0
+    daily_hours = weekly_scheduled_hours / 5.0
 
     # Sample weekly to avoid performance issues for long periods
     current_date = start_date
     while current_date <= check_end_date
-      # Get allocations from detailed assignments
-      detailed_allocation = member.detailed_project_assignments
-                                  .where('start_date <= ? AND end_date >= ?', current_date, current_date)
-                                  .sum(:allocation_percentage)
+      # Skip weekends
+      if !current_date.saturday? && !current_date.sunday?
+        # Get hours from detailed assignments
+        detailed_hours = member.detailed_project_assignments
+                               .where('start_date <= ? AND end_date >= ?', current_date, current_date)
+                               .sum do |da|
+          da.scheduled_hours / da.working_days_count
+        end
 
-      # Get allocations from other ongoing assignments
-      ongoing_allocation = member.ongoing_assignments
-                                 .where.not(id: exclude_assignment_id)
-                                 .where('start_date <= ? AND (end_date IS NULL OR end_date >= ?)',
-                                        current_date, current_date)
-                                 .sum(:allocation_percentage)
+        # Get hours from other ongoing assignments
+        ongoing_hours = member.ongoing_assignments
+                              .where.not(id: exclude_assignment_id)
+                              .where('start_date <= ? AND (end_date IS NULL OR end_date >= ?)',
+                                     current_date, current_date)
+                              .sum('weekly_scheduled_hours / 5.0')
 
-      total_allocation = detailed_allocation + ongoing_allocation + allocation_percentage
+        total_hours = detailed_hours + ongoing_hours + daily_hours
 
-      return true if total_allocation > member.capacity
+        return true if total_hours > daily_capacity
+      end
 
       current_date += 1.week # Check weekly instead of daily for performance
     end
