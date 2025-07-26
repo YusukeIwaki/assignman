@@ -1,0 +1,51 @@
+<% content_for :title, "Edit User" %>
+
+<div style="max-width: 600px;">
+  <%= form_with model: [:admin, @user], local: true do |form| %>
+    <div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 20px;">Edit User Information</h2>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">ID</label>
+        <input type="text" value="<%= @user.id %>" disabled style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #6b7280;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Organization</label>
+        <input type="text" value="<%= @user.organization.name %>" disabled style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #6b7280;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Email</label>
+        <input type="text" value="<%= @user.email || '' %>" disabled style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; background: #f9fafb; color: #6b7280;">
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <%= form.label :name, "Name", style: "display: block; margin-bottom: 8px; font-weight: 500; color: #374151;" %>
+        <%= form.text_field :name, value: @user.name || '', 
+            style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" %>
+        <div style="margin-top: 4px; font-size: 12px; color: #6b7280;">
+          * Name is required
+        </div>
+      </div>
+      
+      <div style="margin-bottom: 30px;">
+        <%= form.label :admin_status, "Admin Status", style: "display: block; margin-bottom: 8px; font-weight: 500; color: #374151;" %>
+        <%= form.select :admin_status, 
+            options_for_select([
+              ['No', 'no'],
+              ['Yes', 'yes']
+            ], @user.admin.present? ? 'yes' : 'no'),
+            {},
+            { style: "width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;" } %>
+      </div>
+      
+      <div style="display: flex; gap: 12px;">
+        <%= form.submit "Update User", 
+            style: "padding: 12px 24px; background: #10b981; color: white; border: none; border-radius: 6px; font-weight: 500; cursor: pointer;" %>
+        <%= link_to "Cancel", admin_users_path, 
+            style: "padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;" %>
+      </div>
+    </div>
+  <% end %>
+</div>

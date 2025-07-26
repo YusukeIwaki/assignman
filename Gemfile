@@ -2,6 +2,8 @@ source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 8.0.2'
+# CSV processing library
+gem 'csv'
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem 'propshaft'
 # Use sqlite3 for development and test, postgresql for production
@@ -24,4 +26,6 @@ end
 group :test do
   gem 'factory_bot_rails', '~> 6.4'
   gem 'rspec-rails', '~> 7.0'
+  gem 'capybara'
+  gem 'capybara-playwright-driver'
 end

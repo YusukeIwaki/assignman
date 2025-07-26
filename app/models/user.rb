@@ -15,6 +15,7 @@ class User < ApplicationRecord
   belongs_to :organization
   has_one :user_credential, dependent: :destroy
   has_one :user_profile, dependent: :destroy
+  has_one :admin, dependent: :destroy
 
   delegate :email, to: :user_credential, allow_nil: true
   delegate :name, to: :user_profile, allow_nil: true
