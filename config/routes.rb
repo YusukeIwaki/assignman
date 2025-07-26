@@ -13,6 +13,13 @@ Rails.application.routes.draw do
         post :import
       end
     end
+    
+    resources :projects, only: [:index, :edit, :update] do
+      collection do
+        get :export
+        post :import
+      end
+    end
   end
 
   # API routes

@@ -1,0 +1,86 @@
+<% content_for :title, "Projects" %>
+
+<div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center;">
+  <%= link_to "Export CSV", export_admin_projects_path, 
+      class: "btn btn-outline", 
+      style: "padding: 8px 16px; border: 1px solid #10b981; color: #10b981; text-decoration: none; border-radius: 4px; font-size: 14px;" %>
+  
+  <%= form_with url: import_admin_projects_path, multipart: true, local: true, 
+      style: "display: inline-flex; align-items: center; gap: 10px;" do |form| %>
+    <%= form.file_field :file, accept: ".csv", 
+        style: "padding: 4px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px;" %>
+    <%= form.submit "Import CSV", 
+        class: "btn btn-primary", 
+        style: "padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; font-size: 14px; cursor: pointer;" %>
+  <% end %>
+</div>
+
+<div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+  <% if @standard_projects.any? || @ongoing_projects.any? %>
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+        <tr>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">ID</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Type</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Organization</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Name</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Client</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Period/Budget</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Created At</th>
+          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @standard_projects.each do |project| %>
+          <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 12px; color: #6b7280;">SP<%= project.id %></td>
+            <td style="padding: 12px; color: #111827;">
+              <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">Standard</span>
+            </td>
+            <td style="padding: 12px; color: #111827;"><%= project.organization.name %></td>
+            <td style="padding: 12px; color: #111827;"><%= project.name %></td>
+            <td style="padding: 12px; color: #111827;"><%= project.client_name || '-' %></td>
+            <td style="padding: 12px; color: #6b7280; font-size: 12px;">
+              <div><%= project.start_date.strftime('%Y-%m-%d') %> - <%= project.end_date.strftime('%Y-%m-%d') %></div>
+              <% if project.budget_hours %>
+                <div>Budget: <%= project.budget_hours %>h</div>
+              <% end %>
+            </td>
+            <td style="padding: 12px; color: #6b7280;"><%= project.created_at.strftime('%Y-%m-%d') %></td>
+            <td style="padding: 12px;">
+              <%= link_to "Edit", edit_admin_project_path(project, type: 'standard'), 
+                  style: "padding: 4px 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;" %>
+            </td>
+          </tr>
+        <% end %>
+        
+        <% @ongoing_projects.each do |project| %>
+          <tr style="border-bottom: 1px solid #f3f4f6;">
+            <td style="padding: 12px; color: #6b7280;">OP<%= project.id %></td>
+            <td style="padding: 12px; color: #111827;">
+              <span style="background: #fde68a; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">Ongoing</span>
+            </td>
+            <td style="padding: 12px; color: #111827;"><%= project.organization.name %></td>
+            <td style="padding: 12px; color: #111827;"><%= project.name %></td>
+            <td style="padding: 12px; color: #111827;"><%= project.client_name || '-' %></td>
+            <td style="padding: 12px; color: #6b7280; font-size: 12px;">
+              <div>Ongoing</div>
+              <% if project.budget %>
+                <div>Budget: $<%= number_with_delimiter(project.budget) %></div>
+              <% end %>
+            </td>
+            <td style="padding: 12px; color: #6b7280;"><%= project.created_at.strftime('%Y-%m-%d') %></td>
+            <td style="padding: 12px;">
+              <%= link_to "Edit", edit_admin_project_path(project, type: 'ongoing'), 
+                  style: "padding: 4px 12px; background: #3b82f6; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <div style="padding: 40px; text-align: center; color: #6b7280;">
+      No projects found.
+    </div>
+  <% end %>
+</div>
