@@ -1,15 +1,16 @@
-class ConfirmRoughProjectAssignment < BaseUseCase
+class CreateDetailedProjectAssignmentFromRoughProjectAssignment < BaseUseCase
+  # Admin use case: Create detailed assignment from rough assignment
   def call(rough_assignment:, admin:)
     validate_inputs(rough_assignment, admin)
 
-    # Check if admin has permission to confirm this assignment
-    unless can_confirm_assignment?(admin, rough_assignment)
-      return failure(BaseUseCase::AuthorizationError.new('Admin cannot confirm this assignment'))
+    # Check if admin has permission to create this assignment
+    unless can_create_assignment?(admin, rough_assignment)
+      return failure(BaseUseCase::AuthorizationError.new('Admin cannot create this assignment'))
     end
 
-    # Check capacity constraints before confirming
+    # Check capacity constraints before creating
     if would_exceed_capacity?(rough_assignment)
-      return failure(BaseUseCase::ValidationError.new('Confirming this assignment would exceed member capacity'))
+      return failure(BaseUseCase::ValidationError.new('Creating this assignment would exceed member capacity'))
     end
 
     # Create a new detailed assignment based on the rough assignment
@@ -46,7 +47,7 @@ class ConfirmRoughProjectAssignment < BaseUseCase
           'Admin must belong to same organization'
   end
 
-  def can_confirm_assignment?(admin, assignment)
+  def can_create_assignment?(admin, assignment)
     # For now, simple check that admin and assignment belong to same organization
     # In future, this could check for specific permissions
     admin.organization_id == assignment.standard_project.organization_id
