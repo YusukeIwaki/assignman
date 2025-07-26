@@ -14,9 +14,9 @@
 class Organization < ApplicationRecord
   has_many :users, dependent: :destroy
   has_many :members, dependent: :destroy
+  has_many :admins, dependent: :destroy
   has_many :standard_projects, dependent: :destroy
   has_many :ongoing_projects, dependent: :destroy
-  has_many :roles, dependent: :destroy
   has_many :skills, dependent: :destroy
 
   validates :name, presence: true, uniqueness: true

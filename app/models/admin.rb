@@ -1,25 +1,26 @@
 # == Schema Information
 #
-# Table name: roles
+# Table name: admins
 #
 #  id              :integer          not null, primary key
-#  name            :string           not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  organization_id :integer          not null
+#  user_id         :integer
 #
 # Indexes
 #
-#  index_roles_on_organization_id           (organization_id)
-#  index_roles_on_organization_id_and_name  (organization_id,name) UNIQUE
+#  index_admins_on_organization_id  (organization_id)
+#  index_admins_on_user_id          (user_id)
 #
 # Foreign Keys
 #
 #  organization_id  (organization_id => organizations.id)
+#  user_id          (user_id => users.id)
 #
-class Role < ApplicationRecord
+class Admin < ApplicationRecord
   belongs_to :organization
-  has_many :members, dependent: :nullify
+  belongs_to :user, optional: true
 
-  validates :name, presence: true, uniqueness: { scope: :organization_id }
+  delegate :email, :name, to: :user, allow_nil: true
 end

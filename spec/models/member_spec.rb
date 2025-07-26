@@ -41,10 +41,6 @@ RSpec.describe Member do
       expect(member).to respond_to(:organization)
     end
 
-    it 'belongs to role optionally' do
-      expect(member).to respond_to(:role)
-    end
-
     it 'has many rough_project_assignments' do
       expect(member).to respond_to(:rough_project_assignments)
     end

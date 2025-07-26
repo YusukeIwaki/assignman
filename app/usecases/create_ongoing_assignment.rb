@@ -1,10 +1,10 @@
 class CreateOngoingAssignment < BaseUseCase
-  def call(ongoing_project:, member:, start_date:, end_date:, allocation_percentage:, administrator:)
-    validate_inputs(ongoing_project, member, start_date, end_date, allocation_percentage, administrator)
+  def call(ongoing_project:, member:, start_date:, end_date:, allocation_percentage:, admin:)
+    validate_inputs(ongoing_project, member, start_date, end_date, allocation_percentage, admin)
 
-    # Check if administrator has permission to manage this project
-    unless can_manage_project?(administrator, ongoing_project)
-      return failure(BaseUseCase::AuthorizationError.new('Administrator cannot manage this project'))
+    # Check if admin has permission to manage this project
+    unless can_manage_project?(admin, ongoing_project)
+      return failure(BaseUseCase::AuthorizationError.new('Admin cannot manage this project'))
     end
 
     # For ongoing assignments, we need to check capacity constraints immediately
@@ -34,29 +34,29 @@ class CreateOngoingAssignment < BaseUseCase
 
   private
 
-  def validate_inputs(ongoing_project, member, start_date, _end_date, allocation_percentage, administrator)
+  def validate_inputs(ongoing_project, member, start_date, _end_date, allocation_percentage, admin)
     raise BaseUseCase::ValidationError, 'Project is required' unless ongoing_project
     raise BaseUseCase::ValidationError, 'Member is required' unless member
     raise BaseUseCase::ValidationError, 'Start date is required' unless start_date
     raise BaseUseCase::ValidationError, 'Allocation percentage is required' unless allocation_percentage
-    raise BaseUseCase::ValidationError, 'Administrator is required' unless administrator
+    raise BaseUseCase::ValidationError, 'Admin is required' unless admin
 
     unless ongoing_project.organization_id == member.organization_id
       raise BaseUseCase::ValidationError,
             'Project and member must belong to same organization'
     end
-    return if administrator.organization_id == member.organization_id
+    return if admin.organization_id == member.organization_id
 
     raise BaseUseCase::ValidationError,
-          'Administrator must belong to same organization'
+          'Admin must belong to same organization'
 
     # NOTE: end_date is optional for ongoing assignments (can be nil for indefinite assignments)
   end
 
-  def can_manage_project?(administrator, ongoing_project)
-    # For now, simple check that administrator and project belong to same organization
+  def can_manage_project?(admin, ongoing_project)
+    # For now, simple check that admin and project belong to same organization
     # In future, this could check for specific permissions
-    administrator.organization_id == ongoing_project.organization_id
+    admin.organization_id == ongoing_project.organization_id
   end
 
   def would_exceed_capacity?(member, start_date, end_date, allocation_percentage, exclude_assignment_id)

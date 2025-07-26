@@ -1,10 +1,10 @@
 class ConfirmRoughProjectAssignment < BaseUseCase
-  def call(rough_assignment:, administrator:)
-    validate_inputs(rough_assignment, administrator)
+  def call(rough_assignment:, admin:)
+    validate_inputs(rough_assignment, admin)
 
-    # Check if administrator has permission to confirm this assignment
-    unless can_confirm_assignment?(administrator, rough_assignment)
-      return failure(BaseUseCase::AuthorizationError.new('Administrator cannot confirm this assignment'))
+    # Check if admin has permission to confirm this assignment
+    unless can_confirm_assignment?(admin, rough_assignment)
+      return failure(BaseUseCase::AuthorizationError.new('Admin cannot confirm this assignment'))
     end
 
     # Check capacity constraints before confirming
@@ -36,20 +36,20 @@ class ConfirmRoughProjectAssignment < BaseUseCase
 
   private
 
-  def validate_inputs(rough_assignment, administrator)
+  def validate_inputs(rough_assignment, admin)
     raise BaseUseCase::ValidationError, 'Rough assignment is required' unless rough_assignment
-    raise BaseUseCase::ValidationError, 'Administrator is required' unless administrator
+    raise BaseUseCase::ValidationError, 'Admin is required' unless admin
 
-    return if administrator.organization_id == rough_assignment.standard_project.organization_id
+    return if admin.organization_id == rough_assignment.standard_project.organization_id
 
     raise BaseUseCase::ValidationError,
-          'Administrator must belong to same organization'
+          'Admin must belong to same organization'
   end
 
-  def can_confirm_assignment?(administrator, assignment)
-    # For now, simple check that administrator and assignment belong to same organization
+  def can_confirm_assignment?(admin, assignment)
+    # For now, simple check that admin and assignment belong to same organization
     # In future, this could check for specific permissions
-    administrator.organization_id == assignment.standard_project.organization_id
+    admin.organization_id == assignment.standard_project.organization_id
   end
 
   def would_exceed_capacity?(assignment)

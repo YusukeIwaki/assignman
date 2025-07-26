@@ -8,7 +8,6 @@
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
 #  organization_id :integer          not null
-#  role_id         :integer
 #
 # Indexes
 #
@@ -20,7 +19,6 @@
 #
 class Member < ApplicationRecord
   belongs_to :organization
-  belongs_to :role, optional: true
   has_many :rough_project_assignments, dependent: :destroy
   has_many :detailed_project_assignments, dependent: :destroy
   has_many :ongoing_assignments, dependent: :destroy

@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe GetMemberSchedule do
   let(:organization) { create(:organization) }
   let(:member) { create(:member, organization: organization, name: 'John Doe') }
-  let(:administrator) { create(:user, organization: organization) }
+  let(:admin) { create(:admin, organization: organization) }
   let(:start_date) { Date.current }
   let(:end_date) { Date.current + 1.week }
 
@@ -13,7 +13,7 @@ RSpec.describe GetMemberSchedule do
         member: member,
         start_date: start_date,
         end_date: end_date,
-        viewer: administrator
+        viewer: admin
       }
     end
 
@@ -171,15 +171,15 @@ RSpec.describe GetMemberSchedule do
         expect(result.success?).to be true
       end
 
-      it 'allows administrator from same organization to view member schedule' do
-        result = described_class.call(**valid_params, viewer: administrator)
+      it 'allows admin from same organization to view member schedule' do
+        result = described_class.call(**valid_params, viewer: admin)
 
         expect(result.success?).to be true
       end
 
-      it 'denies access to administrator from different organization' do
+      it 'denies access to admin from different organization' do
         other_organization = create(:organization)
-        other_admin = create(:user, organization: other_organization)
+        other_admin = create(:admin, organization: other_organization)
 
         result = described_class.call(**valid_params, viewer: other_admin)
 

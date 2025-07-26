@@ -4,10 +4,6 @@ FactoryBot.define do
     capacity { 100.0 }
     organization
 
-    trait :with_role do
-      role
-    end
-
     trait :with_skills do
       after(:create) do |member|
         create_list(:member_skill, 2, member: member)
