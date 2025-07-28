@@ -29,3 +29,6 @@ group :test do
   gem 'capybara'
   gem 'capybara-playwright-driver'
 end
+
+# MCP server for use case operations
+gem 'fast-mcp', github: 'yjacquin/fast-mcp'
