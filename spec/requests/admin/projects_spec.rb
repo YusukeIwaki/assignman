@@ -23,8 +23,6 @@ RSpec.describe 'Admin::Projects', type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('Web Project')
       expect(response.body).to include('Support Project')
-      expect(response.body).to include('Client A')
-      expect(response.body).to include('Client B')
     end
   end
 
@@ -40,19 +38,17 @@ RSpec.describe 'Admin::Projects', type: :request do
       csv_data = CSV.parse(response.body, headers: true)
 
       expect(csv_data.length).to eq(2)
-      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Client', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
+      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
 
       # Check standard project data
       standard_row = csv_data.find { |row| row['Name'] == 'Web Project' }
       expect(standard_row['Type']).to eq('Standard')
       expect(standard_row['Organization']).to eq('Test Organization')
-      expect(standard_row['Client']).to eq('Client A')
       expect(standard_row['Created At']).to eq('2024-01-15')
 
       # Check ongoing project data
       ongoing_row = csv_data.find { |row| row['Name'] == 'Support Project' }
       expect(ongoing_row['Type']).to eq('Ongoing')
-      expect(ongoing_row['Client']).to eq('Client B')
     end
   end
 
@@ -75,9 +71,9 @@ RSpec.describe 'Admin::Projects', type: :request do
 
     it 'skips non-existent projects in CSV' do
       valid_csv = CSV.generate(headers: true) do |csv|
-        csv << ['ID', 'Type', 'Organization', 'Name', 'Client', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
-        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Updated Web Project', 'Client A Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
-        csv << ['SP99999', 'Standard', 'Test Organization', 'Non Existent Project', 'Client X', '2024-01-01', '2024-06-30', '100', '', '2024-01-15']
+        csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Updated Web Project', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
+        csv << ['SP99999', 'Standard', 'Test Organization', 'Non Existent Project', '2024-01-01', '2024-06-30', '100', '', '2024-01-15']
       end
 
       csv_file = Tempfile.new(['projects', '.csv'])
@@ -94,7 +90,6 @@ RSpec.describe 'Admin::Projects', type: :request do
       # Verify only the valid project was updated
       standard_project1.reload
       expect(standard_project1.name).to eq('Updated Web Project')
-      expect(standard_project1.client_name).to eq('Client A Updated')
 
       csv_file.close
       csv_file.unlink
@@ -128,7 +123,7 @@ RSpec.describe 'Admin::Projects', type: :request do
     it 'validates name presence for standard project' do
       put admin_project_path(standard_project1), params: {
         type: 'standard',
-        project: { name: '', client_name: 'Test Client' }
+        project: { name: '' }
       }
 
       expect(response).to have_http_status(:ok) # Should render edit template, not redirect
@@ -152,7 +147,7 @@ RSpec.describe 'Admin::Projects', type: :request do
     it 'validates name presence for ongoing project' do
       put admin_project_path(ongoing_project1), params: {
         type: 'ongoing',
-        project: { name: '', client_name: 'Test Client' }
+        project: { name: '' }
       }
 
       expect(response).to have_http_status(:ok)
@@ -164,7 +159,6 @@ RSpec.describe 'Admin::Projects', type: :request do
         type: 'standard',
         project: {
           name: 'Updated Name',
-          client_name: 'Updated Client',
           status: 'confirmed',
           start_date: '2024-01-01',
           end_date: '2024-06-30'
@@ -177,7 +171,6 @@ RSpec.describe 'Admin::Projects', type: :request do
 
       standard_project1.reload
       expect(standard_project1.name).to eq('Updated Name')
-      expect(standard_project1.client_name).to eq('Updated Client')
     end
 
     it 'updates ongoing project with valid data' do
@@ -185,7 +178,6 @@ RSpec.describe 'Admin::Projects', type: :request do
         type: 'ongoing',
         project: {
           name: 'Updated Support',
-          client_name: 'Updated Client',
           budget: '750000'
         }
       }

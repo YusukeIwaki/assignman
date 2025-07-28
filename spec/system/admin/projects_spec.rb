@@ -35,14 +35,10 @@ RSpec.describe 'Admin Projects', type: :system do
       # Standard projects
       expect(page).to have_text('Web Development')
       expect(page).to have_text('Mobile App')
-      expect(page).to have_text('Client A')
-      expect(page).to have_text('Client B')
 
       # Ongoing projects
       expect(page).to have_text('Support Service')
       expect(page).to have_text('Maintenance')
-      expect(page).to have_text('Client C')
-      expect(page).to have_text('Client D')
 
       expect(page).to have_text('Test Organization')
       expect(page).to have_text('2024-01-15')
@@ -82,13 +78,12 @@ RSpec.describe 'Admin Projects', type: :system do
       csv_data = CSV.parse(csv_content, headers: true)
 
       expect(csv_data.length).to eq(4) # 2 standard + 2 ongoing projects
-      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Client', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
+      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
 
       # Check standard project data
       web_row = csv_data.find { |row| row['Name'] == 'Web Development' }
       expect(web_row['Type']).to eq('Standard')
       expect(web_row['Organization']).to eq('Test Organization')
-      expect(web_row['Client']).to eq('Client A')
       expect(web_row['Created At']).to eq('2024-01-15')
 
       # Check ongoing project data
@@ -103,9 +98,9 @@ RSpec.describe 'Admin Projects', type: :system do
   describe 'CSV Import' do
     let(:csv_content) do
       CSV.generate(headers: true) do |csv|
-        csv << ['ID', 'Type', 'Organization', 'Name', 'Client', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
-        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Web Development Updated', 'Client A Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
-        csv << ["OP#{ongoing_project1.id}", 'Ongoing', 'Test Organization', 'Support Service Updated', 'Client C Updated', '', '', '', '600000', '2024-01-15']
+        csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Web Development Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
+        csv << ["OP#{ongoing_project1.id}", 'Ongoing', 'Test Organization', 'Support Service Updated', '', '', '', '600000', '2024-01-15']
       end
     end
 
@@ -126,19 +121,15 @@ RSpec.describe 'Admin Projects', type: :system do
       # Verify the updates in the UI
       expect(page).to have_text('Web Development Updated')
       expect(page).to have_text('Support Service Updated')
-      expect(page).to have_text('Client A Updated')
-      expect(page).to have_text('Client C Updated')
 
       # Verify the updates in the database
       standard_project1.reload
       ongoing_project1.reload
 
       expect(standard_project1.name).to eq('Web Development Updated')
-      expect(standard_project1.client_name).to eq('Client A Updated')
       expect(standard_project1.budget_hours).to eq(200.0)
 
       expect(ongoing_project1.name).to eq('Support Service Updated')
-      expect(ongoing_project1.client_name).to eq('Client C Updated')
       expect(ongoing_project1.budget).to eq(600000.0)
 
       csv_file.close
@@ -197,12 +188,10 @@ RSpec.describe 'Admin Projects', type: :system do
 
       # Update the project
       fill_in 'project_name', with: 'Web Development Updated'
-      fill_in 'project_client_name', with: 'New Client'
       click_button 'Update Project'
 
       expect(page).to have_text('Project updated successfully')
       expect(page).to have_text('Web Development Updated')
-      expect(page).to have_text('New Client')
 
     end
 
@@ -250,6 +239,7 @@ RSpec.describe 'Admin Projects', type: :system do
       expect(page).to have_text('Edit Standard Project Information')
       expect(page).to have_text("Name can't be blank")
 
+      # Form should retain the status selection
     end
 
     it 'shows validation error for standard project when dates are invalid' do

@@ -17,7 +17,7 @@ class Admin::ProjectsController < ApplicationController
     @project = find_project
     @project_type = params[:type]
 
-    project_params = params.require(:project).permit(:name, :client_name, :notes, :start_date, :end_date, :budget_hours, :budget)
+    project_params = params.require(:project).permit(:name, :notes, :start_date, :end_date, :budget_hours, :budget)
 
     # Validation
     @errors = []
@@ -49,7 +49,6 @@ class Admin::ProjectsController < ApplicationController
       if @project_type == 'standard'
         @project.update!(
           name: project_params[:name],
-          client_name: project_params[:client_name],
           notes: project_params[:notes],
           start_date: project_params[:start_date],
           end_date: project_params[:end_date],
@@ -58,7 +57,6 @@ class Admin::ProjectsController < ApplicationController
       else # ongoing
         @project.update!(
           name: project_params[:name],
-          client_name: project_params[:client_name],
           notes: project_params[:notes],
           budget: project_params[:budget]
         )
@@ -76,7 +74,7 @@ class Admin::ProjectsController < ApplicationController
     @ongoing_projects = OngoingProject.includes(:organization).order(:created_at)
 
     csv_data = CSV.generate(headers: true) do |csv|
-      csv << ['ID', 'Type', 'Organization', 'Name', 'Client', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+      csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
 
       @standard_projects.each do |project|
         csv << [
@@ -84,7 +82,6 @@ class Admin::ProjectsController < ApplicationController
           'Standard',
           project.organization.name,
           project.name,
-          project.client_name || '',
           project.start_date.strftime('%Y-%m-%d'),
           project.end_date.strftime('%Y-%m-%d'),
           project.budget_hours || '',
@@ -99,7 +96,6 @@ class Admin::ProjectsController < ApplicationController
           'Ongoing',
           project.organization.name,
           project.name,
-          project.client_name || '',
           '',
           '',
           '',
@@ -145,14 +141,9 @@ class Admin::ProjectsController < ApplicationController
 
           # Update project fields
           name = row['Name']&.strip
-          client_name = row['Client']&.strip
 
           if name.present?
             project.name = name
-          end
-
-          if client_name.present?
-            project.client_name = client_name
           end
 
           # Update type-specific fields
