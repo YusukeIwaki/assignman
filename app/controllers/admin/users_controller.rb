@@ -4,15 +4,15 @@ class Admin::UsersController < ApplicationController
   layout 'admin'
 
   def index
-    @users = User.includes(:user_profile, :organization, :admin).order(:created_at)
+    @users = User.includes(:user_profile, :admin).order(:created_at)
   end
 
   def edit
-    @user = User.includes(:user_profile, :organization, :admin).find(params[:id])
+    @user = User.includes(:user_profile, :admin).find(params[:id])
   end
 
   def update
-    @user = User.includes(:user_profile, :organization, :admin).find(params[:id])
+    @user = User.includes(:user_profile, :admin).find(params[:id])
     
     user_params = params.require(:user).permit(:name, :admin_status)
     
@@ -37,7 +37,7 @@ class Admin::UsersController < ApplicationController
       # Update admin status
       admin_status = user_params[:admin_status]
       if admin_status == 'yes' && !@user.admin
-        Admin.create!(organization: @user.organization, user: @user)
+        Admin.create!(user: @user)
       elsif admin_status == 'no' && @user.admin
         @user.admin.destroy!
       end
@@ -50,15 +50,14 @@ class Admin::UsersController < ApplicationController
   end
 
   def export
-    @users = User.includes(:user_profile, :organization, :admin).order(:created_at)
+    @users = User.includes(:user_profile, :admin).order(:created_at)
     
     csv_data = CSV.generate(headers: true) do |csv|
-      csv << ['ID', 'Organization', 'Name', 'Email', 'Admin', 'Created At']
+      csv << ['ID', 'Name', 'Email', 'Admin', 'Created At']
       
       @users.each do |user|
         csv << [
           user.id,
-          user.organization.name,
           user.name || '',
           user.email || '',
           user.admin.present? ? 'Yes' : 'No',
@@ -101,7 +100,7 @@ class Admin::UsersController < ApplicationController
           admin_status = row['Admin']&.strip&.downcase
           if ['yes', 'no'].include?(admin_status)
             if admin_status == 'yes' && !user.admin
-              Admin.create!(organization: user.organization, user: user)
+              Admin.create!(user: user)
             elsif admin_status == 'no' && user.admin
               user.admin.destroy!
             end

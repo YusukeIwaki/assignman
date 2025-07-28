@@ -1,10 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe AcknowledgeDetailedProjectAssignment do
-  let(:organization) { create(:organization) }
-  let(:member) { create(:member, organization: organization) }
-  let(:other_member) { create(:member, organization: organization) }
-  let(:standard_project) { create(:standard_project, organization: organization) }
+  let(:member) { create(:member) }
+  let(:other_member) { create(:member) }
+  let(:standard_project) { create(:standard_project) }
   let(:detailed_assignment) do
     create(:detailed_project_assignment,
            member: member,
@@ -63,19 +62,6 @@ RSpec.describe AcknowledgeDetailedProjectAssignment do
         expect(result.error.message).to eq('Member cannot acknowledge this assignment')
       end
 
-      it 'fails when member and assignment belong to different organizations' do
-        other_organization = create(:organization)
-        other_member = create(:member, organization: other_organization)
-
-        result = described_class.call(
-          detailed_assignment: detailed_assignment,
-          member: other_member
-        )
-
-        expect(result.failure?).to be true
-        expect(result.error).to be_a(BaseUseCase::ValidationError)
-        expect(result.error.message).to eq('Member must belong to same organization')
-      end
     end
   end
 end

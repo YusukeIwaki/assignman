@@ -17,10 +17,9 @@ RSpec.describe 'Api::Users' do
     end
 
     context 'when users exist' do
-      let(:organization) { create(:organization) }
       let!(:users) do
         (1..25).map do |i|
-          user = create(:user, organization: organization)
+          user = create(:user)
           user.user_credential.update!(email: "user#{i}@example.com")
           user.user_profile.update!(name: "User #{i}")
           user
@@ -99,7 +98,6 @@ RSpec.describe 'Api::Users' do
         expect(user['id']).to be_a(Integer)
         expect(user['name']).to be_a(String)
         expect(user).not_to have_key('email')
-        expect(user).not_to have_key('organization_id')
       end
     end
 

@@ -2,44 +2,38 @@ require 'rails_helper'
 
 RSpec.describe Member do
   describe 'validations' do
-    let(:organization) { create(:organization) }
-
     it 'validates presence of name' do
-      member = build(:member, name: nil, organization: organization)
+      member = build(:member, name: nil)
       expect(member).not_to be_valid
       expect(member.errors[:name]).to include("can't be blank")
     end
 
     it 'validates presence of standard_working_hours' do
-      member = build(:member, standard_working_hours: nil, organization: organization)
+      member = build(:member, standard_working_hours: nil)
       expect(member).not_to be_valid
       expect(member.errors[:standard_working_hours]).to include("can't be blank")
     end
 
     it 'validates standard_working_hours is greater than 0' do
-      member = build(:member, standard_working_hours: 0, organization: organization)
+      member = build(:member, standard_working_hours: 0)
       expect(member).not_to be_valid
       expect(member.errors[:standard_working_hours]).to include('must be greater than 0')
     end
 
     it 'validates standard_working_hours is less than or equal to 80' do
-      member = build(:member, standard_working_hours: 100, organization: organization)
+      member = build(:member, standard_working_hours: 100)
       expect(member).not_to be_valid
       expect(member.errors[:standard_working_hours]).to include('must be less than or equal to 80')
     end
 
     it 'allows valid standard_working_hours' do
-      member = build(:member, standard_working_hours: 40, organization: organization)
+      member = build(:member, standard_working_hours: 40)
       expect(member).to be_valid
     end
   end
 
   describe 'associations' do
     let(:member) { create(:member) }
-
-    it 'belongs to organization' do
-      expect(member).to respond_to(:organization)
-    end
 
     it 'has many rough_project_assignments' do
       expect(member).to respond_to(:rough_project_assignments)
@@ -69,7 +63,7 @@ RSpec.describe Member do
     end
 
     context 'with detailed project assignments' do
-      let(:project) { create(:standard_project, organization: member.organization, start_date: today - 1.week, end_date: today + 1.month) }
+      let(:project) { create(:standard_project, start_date: today - 1.week, end_date: today + 1.month) }
       let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: today, end_date: today + 4.days) }
 
       it 'calculates daily hours correctly' do
@@ -86,7 +80,7 @@ RSpec.describe Member do
     end
 
     context 'with both types of assignments' do
-      let(:project) { create(:standard_project, organization: member.organization, start_date: today - 1.week, end_date: today + 1.month) }
+      let(:project) { create(:standard_project, start_date: today - 1.week, end_date: today + 1.month) }
       let!(:detailed) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: today, end_date: today + 4.days) }
       let!(:ongoing) { create(:ongoing_assignment, member: member, weekly_scheduled_hours: 10.0, start_date: today) }
 
@@ -124,7 +118,7 @@ RSpec.describe Member do
       end
 
       context 'with assignments' do
-        let(:project) { create(:standard_project, organization: member.organization, start_date: monday - 1.week, end_date: monday + 1.month) }
+        let(:project) { create(:standard_project, start_date: monday - 1.week, end_date: monday + 1.month) }
         let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: monday, end_date: monday + 4.days) }
 
         it 'returns remaining hours' do
@@ -151,7 +145,7 @@ RSpec.describe Member do
     end
 
     context 'with assignments' do
-      let(:project) { create(:standard_project, organization: member.organization, start_date: week_start - 1.week, end_date: week_start + 1.month) }
+      let(:project) { create(:standard_project, start_date: week_start - 1.week, end_date: week_start + 1.month) }
       let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: week_start, end_date: week_start + 4.days) }
 
       it 'calculates weekly hours correctly' do

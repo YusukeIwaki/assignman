@@ -2,9 +2,8 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin Users', type: :system do
-  let(:organization) { create(:organization, name: 'Test Organization') }
-  let(:user1) { create(:user, organization: organization) }
-  let(:user2) { create(:user, organization: organization) }
+  let(:user1) { create(:user) }
+  let(:user2) { create(:user) }
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do
@@ -20,7 +19,7 @@ RSpec.describe 'Admin Users', type: :system do
     user2.user_credential.update!(email: 'jane@example.com')
 
     # Make user1 an admin
-    create(:admin, user: user1, organization: organization)
+    create(:admin, user: user1)
   end
 
   describe 'Users index page' do
@@ -38,7 +37,6 @@ RSpec.describe 'Admin Users', type: :system do
       expect(page).to have_text('Jane Smith')
       expect(page).to have_text('john@example.com')
       expect(page).to have_text('jane@example.com')
-      expect(page).to have_text('Test Organization')
       expect(page).to have_text('2024-01-15')
 
       expect(page).to have_link('Edit', href: edit_admin_user_path(user1))
@@ -74,11 +72,10 @@ RSpec.describe 'Admin Users', type: :system do
       csv_data = CSV.parse(csv_content, headers: true)
 
       expect(csv_data.length).to eq(2)
-      expect(csv_data.headers).to eq(['ID', 'Organization', 'Name', 'Email', 'Admin', 'Created At'])
+      expect(csv_data.headers).to eq(['ID', 'Name', 'Email', 'Admin', 'Created At'])
 
       # Check user data
       john_row = csv_data.find { |row| row['Name'] == 'John Doe' }
-      expect(john_row['Organization']).to eq('Test Organization')
       expect(john_row['Email']).to eq('john@example.com')
       expect(john_row['Admin']).to eq('Yes')
       expect(john_row['Created At']).to eq('2024-01-15')
@@ -94,9 +91,9 @@ RSpec.describe 'Admin Users', type: :system do
   describe 'CSV Import' do
     let(:csv_content) do
       CSV.generate(headers: true) do |csv|
-        csv << ['ID', 'Organization', 'Name', 'Email', 'Admin', 'Created At']
-        csv << [user1.id, 'Test Organization', 'John Updated', 'john@example.com', 'No', '2024-01-15']
-        csv << [user2.id, 'Test Organization', 'Jane Updated', 'jane@example.com', 'Yes', '2024-01-15']
+        csv << ['ID', 'Name', 'Email', 'Admin', 'Created At']
+        csv << [user1.id, 'John Updated', 'john@example.com', 'No', '2024-01-15']
+        csv << [user2.id, 'Jane Updated', 'jane@example.com', 'Yes', '2024-01-15']
       end
     end
 
@@ -229,11 +226,10 @@ RSpec.describe 'Admin Users', type: :system do
       expect(page).to have_text('John Doe') # unchanged
     end
 
-    it 'shows readonly fields for ID, Organization, and Email' do
+    it 'shows readonly fields for ID and Email' do
       visit edit_admin_user_path(user1)
 
       expect(page).to have_field(type: 'text', disabled: true, with: user1.id.to_s)
-      expect(page).to have_field(type: 'text', disabled: true, with: 'Test Organization')
       expect(page).to have_field(type: 'text', disabled: true, with: 'john@example.com')
     end
 

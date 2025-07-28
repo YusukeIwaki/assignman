@@ -2,11 +2,10 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin Projects', type: :system do
-  let(:organization) { create(:organization, name: 'Test Organization') }
-  let(:standard_project1) { create(:standard_project, organization: organization, name: 'Web Development', client_name: 'Client A', status: 'confirmed') }
-  let(:standard_project2) { create(:standard_project, organization: organization, name: 'Mobile App', client_name: 'Client B', status: 'tentative') }
-  let(:ongoing_project1) { create(:ongoing_project, organization: organization, name: 'Support Service', client_name: 'Client C', status: 'active') }
-  let(:ongoing_project2) { create(:ongoing_project, organization: organization, name: 'Maintenance', client_name: 'Client D', status: 'inactive') }
+  let(:standard_project1) { create(:standard_project, name: 'Web Development', client_name: 'Client A', status: 'confirmed') }
+  let(:standard_project2) { create(:standard_project, name: 'Mobile App', client_name: 'Client B', status: 'tentative') }
+  let(:ongoing_project1) { create(:ongoing_project, name: 'Support Service', client_name: 'Client C', status: 'active') }
+  let(:ongoing_project2) { create(:ongoing_project, name: 'Maintenance', client_name: 'Client D', status: 'inactive') }
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do
@@ -40,7 +39,6 @@ RSpec.describe 'Admin Projects', type: :system do
       expect(page).to have_text('Support Service')
       expect(page).to have_text('Maintenance')
 
-      expect(page).to have_text('Test Organization')
       expect(page).to have_text('2024-01-15')
 
       expect(page).to have_link('Edit', href: edit_admin_project_path(standard_project1, type: 'standard'))
@@ -78,12 +76,11 @@ RSpec.describe 'Admin Projects', type: :system do
       csv_data = CSV.parse(csv_content, headers: true)
 
       expect(csv_data.length).to eq(4) # 2 standard + 2 ongoing projects
-      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
+      expect(csv_data.headers).to eq(['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
 
       # Check standard project data
       web_row = csv_data.find { |row| row['Name'] == 'Web Development' }
       expect(web_row['Type']).to eq('Standard')
-      expect(web_row['Organization']).to eq('Test Organization')
       expect(web_row['Created At']).to eq('2024-01-15')
 
       # Check ongoing project data
@@ -98,9 +95,9 @@ RSpec.describe 'Admin Projects', type: :system do
   describe 'CSV Import' do
     let(:csv_content) do
       CSV.generate(headers: true) do |csv|
-        csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
-        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Web Development Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
-        csv << ["OP#{ongoing_project1.id}", 'Ongoing', 'Test Organization', 'Support Service Updated', '', '', '', '600000', '2024-01-15']
+        csv << ['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+        csv << ["SP#{standard_project1.id}", 'Standard', 'Web Development Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
+        csv << ["OP#{ongoing_project1.id}", 'Ongoing', 'Support Service Updated', '', '', '', '600000', '2024-01-15']
       end
     end
 
@@ -220,12 +217,11 @@ RSpec.describe 'Admin Projects', type: :system do
       expect(page).to have_text('Web Development') # unchanged
     end
 
-    it 'shows readonly fields for ID, Type, and Organization' do
+    it 'shows readonly fields for ID and Type' do
       visit edit_admin_project_path(standard_project1, type: 'standard')
 
       expect(page).to have_field(type: 'text', disabled: true, with: "SP#{standard_project1.id}")
       expect(page).to have_field(type: 'text', disabled: true, with: 'Standard')
-      expect(page).to have_field(type: 'text', disabled: true, with: 'Test Organization')
     end
 
     it 'shows validation error when name is blank' do

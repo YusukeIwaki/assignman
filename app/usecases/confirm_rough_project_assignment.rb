@@ -2,11 +2,6 @@ class ConfirmRoughProjectAssignment < BaseUseCase
   def call(rough_assignment:, admin:)
     validate_inputs(rough_assignment, admin)
 
-    # Check if admin has permission to confirm this assignment
-    unless can_confirm_assignment?(admin, rough_assignment)
-      return failure(BaseUseCase::AuthorizationError.new('Admin cannot confirm this assignment'))
-    end
-
     # Check capacity constraints before confirming
     if would_exceed_capacity?(rough_assignment)
       return failure(BaseUseCase::ValidationError.new('Confirming this assignment would exceed member capacity'))
@@ -39,16 +34,6 @@ class ConfirmRoughProjectAssignment < BaseUseCase
   def validate_inputs(rough_assignment, admin)
     raise BaseUseCase::ValidationError, 'Rough assignment is required' unless rough_assignment
     raise BaseUseCase::ValidationError, 'Admin is required' unless admin
-
-    return if admin.organization_id == rough_assignment.standard_project.organization_id
-
-    raise BaseUseCase::ValidationError,
-          'Admin must belong to same organization'
-  end
-
-  def can_confirm_assignment?(admin, assignment)
-    # Admin can confirm assignments for projects in their organization
-    admin.organization_id == assignment.standard_project.organization_id
   end
 
   def would_exceed_capacity?(assignment)

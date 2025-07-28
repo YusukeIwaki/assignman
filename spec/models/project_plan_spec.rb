@@ -99,7 +99,7 @@ RSpec.describe ProjectPlan do
   describe '#convert_rough_to_detailed' do
     let(:standard_project) { create(:standard_project, start_date: Date.new(2024, 1, 8), end_date: Date.new(2024, 2, 8)) }
     let(:project_plan) { standard_project.project_plan }
-    let(:member) { create(:member, organization: standard_project.organization, standard_working_hours: 40.0) }
+    let(:member) { create(:member, standard_working_hours: 40.0) }
     let(:rough_assignment) do
       create(:rough_project_assignment,
              standard_project: standard_project,

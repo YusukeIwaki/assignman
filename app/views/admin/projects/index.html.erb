@@ -22,7 +22,6 @@
         <tr>
           <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">ID</th>
           <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Type</th>
-          <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Organization</th>
           <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Name</th>
           <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Period/Budget</th>
           <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Created At</th>
@@ -36,7 +35,6 @@
             <td style="padding: 12px; color: #111827;">
               <span style="background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">Standard</span>
             </td>
-            <td style="padding: 12px; color: #111827;"><%= project.organization.name %></td>
             <td style="padding: 12px; color: #111827;"><%= project.name %></td>
             <td style="padding: 12px; color: #6b7280; font-size: 12px;">
               <div><%= project.start_date.strftime('%Y-%m-%d') %> - <%= project.end_date.strftime('%Y-%m-%d') %></div>
@@ -58,7 +56,6 @@
             <td style="padding: 12px; color: #111827;">
               <span style="background: #fde68a; color: #92400e; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500;">Ongoing</span>
             </td>
-            <td style="padding: 12px; color: #111827;"><%= project.organization.name %></td>
             <td style="padding: 12px; color: #111827;"><%= project.name %></td>
             <td style="padding: 12px; color: #6b7280; font-size: 12px;">
               <div>Ongoing</div>

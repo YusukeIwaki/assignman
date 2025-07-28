@@ -20,7 +20,6 @@
     <thead style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
       <tr>
         <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">ID</th>
-        <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Organization</th>
         <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Name</th>
         <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Email</th>
         <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">Admin</th>
@@ -32,7 +31,6 @@
       <% @users.each do |user| %>
         <tr style="border-bottom: 1px solid #f3f4f6;">
           <td style="padding: 12px; color: #6b7280;"><%= user.id %></td>
-          <td style="padding: 12px; color: #111827;"><%= user.organization.name %></td>
           <td style="padding: 12px; color: #111827;"><%= user.name || '-' %></td>
           <td style="padding: 12px; color: #111827;"><%= user.email || '-' %></td>
           <td style="padding: 12px;">

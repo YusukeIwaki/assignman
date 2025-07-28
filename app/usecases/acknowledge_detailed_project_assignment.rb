@@ -21,11 +21,6 @@ class AcknowledgeDetailedProjectAssignment < BaseUseCase
   def validate_inputs(detailed_assignment, member)
     raise BaseUseCase::ValidationError, 'Detailed assignment is required' unless detailed_assignment
     raise BaseUseCase::ValidationError, 'Member is required' unless member
-
-    return if member.organization_id == detailed_assignment.standard_project.organization_id
-
-    raise BaseUseCase::ValidationError,
-          'Member must belong to same organization'
   end
 
   def can_acknowledge_assignment?(member, assignment)

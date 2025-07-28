@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :ongoing_project do
-    organization
     sequence(:name) { |n| "Ongoing Project #{n}" }
     status { 'active' }
     client_name { 'Example Client' }

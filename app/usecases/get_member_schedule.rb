@@ -46,11 +46,11 @@ class GetMemberSchedule < BaseUseCase
     # Member can view their own schedule
     return true if viewer == member
 
-    # Admins can view schedules of members in their organization
-    return viewer.organization_id == member.organization_id if viewer.is_a?(Admin) && member.is_a?(Member)
+    # Admins can view any member's schedule
+    return true if viewer.is_a?(Admin)
 
-    # Legacy Users (administrators) can view schedules of members in their organization
-    return viewer.organization_id == member.organization_id if viewer.is_a?(User) && member.is_a?(Member)
+    # Legacy Users (administrators) can view any member's schedule
+    return true if viewer.is_a?(User)
 
     false
   end

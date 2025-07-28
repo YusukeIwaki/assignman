@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: project_plans
+#
+#  id                  :integer          not null, primary key
+#  created_at          :datetime         not null
+#  updated_at          :datetime         not null
+#  standard_project_id :integer          not null
+#
+# Indexes
+#
+#  index_project_plans_on_standard_project_id  (standard_project_id) UNIQUE
+#
+# Foreign Keys
+#
+#  standard_project_id  (standard_project_id => standard_projects.id)
+#
 class ProjectPlan < ApplicationRecord
   belongs_to :standard_project
   has_many :rough_project_assignments, through: :standard_project

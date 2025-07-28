@@ -7,18 +7,8 @@
 #  standard_working_hours :decimal(5, 1)    default(40.0), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
-#  organization_id        :integer          not null
-#
-# Indexes
-#
-#  index_members_on_organization_id  (organization_id)
-#
-# Foreign Keys
-#
-#  organization_id  (organization_id => organizations.id)
 #
 class Member < ApplicationRecord
-  belongs_to :organization
   has_many :rough_project_assignments, dependent: :destroy
   has_many :detailed_project_assignments, dependent: :destroy
   has_many :ongoing_assignments, dependent: :destroy

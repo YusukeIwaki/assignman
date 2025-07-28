@@ -1,9 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe GetMemberSchedule do
-  let(:organization) { create(:organization) }
-  let(:member) { create(:member, organization: organization, name: 'John Doe', standard_working_hours: 40.0) }
-  let(:admin) { create(:admin, organization: organization) }
+  let(:member) { create(:member, name: 'John Doe', standard_working_hours: 40.0) }
+  let(:admin) { create(:admin) }
   let(:start_date) { Date.new(2024, 1, 8) } # Monday
   let(:end_date) { Date.new(2024, 1, 15) } # Next Monday
 
@@ -48,11 +47,11 @@ RSpec.describe GetMemberSchedule do
         end
       end
       let!(:standard_project) do
-        create(:standard_project, organization: organization, name: 'Project Alpha',
+        create(:standard_project, name: 'Project Alpha',
                                   start_date: Date.new(2024, 1, 1), end_date: Date.new(2024, 1, 31))
       end
       let!(:ongoing_project) do
-        create(:ongoing_project, organization: organization, name: 'Project Beta')
+        create(:ongoing_project, name: 'Project Beta')
       end
 
       let!(:detailed_assignment) do
@@ -177,33 +176,12 @@ RSpec.describe GetMemberSchedule do
         expect(result.success?).to be true
       end
 
-      it 'allows admin from same organization to view member schedule' do
+      it 'allows admin to view member schedule' do
         result = described_class.call(**valid_params, viewer: admin)
 
         expect(result.success?).to be true
       end
 
-      it 'denies access to admin from different organization' do
-        other_organization = create(:organization)
-        other_admin = create(:admin, organization: other_organization)
-
-        result = described_class.call(**valid_params, viewer: other_admin)
-
-        expect(result.failure?).to be true
-        expect(result.error).to be_a(BaseUseCase::AuthorizationError)
-        expect(result.error.message).to eq('Viewer cannot access this member schedule')
-      end
-
-      it 'denies access to member from different organization' do
-        other_organization = create(:organization)
-        other_member = create(:member, organization: other_organization)
-
-        result = described_class.call(**valid_params, viewer: other_member)
-
-        expect(result.failure?).to be true
-        expect(result.error).to be_a(BaseUseCase::AuthorizationError)
-        expect(result.error.message).to eq('Viewer cannot access this member schedule')
-      end
     end
   end
 end

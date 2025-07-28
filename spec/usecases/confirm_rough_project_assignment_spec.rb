@@ -6,10 +6,9 @@ RSpec.describe ConfirmRoughProjectAssignment do
       example.run
     end
   end
-  let(:organization) { create(:organization) }
-  let(:admin) { create(:admin, organization: organization) }
-  let(:member) { create(:member, organization: organization, standard_working_hours: 40.0) }
-  let(:standard_project) { create(:standard_project, organization: organization) }
+  let(:admin) { create(:admin) }
+  let(:member) { create(:member, standard_working_hours: 40.0) }
+  let(:standard_project) { create(:standard_project) }
   let(:rough_assignment) do
     create(:rough_project_assignment,
            member: member,
@@ -89,20 +88,5 @@ RSpec.describe ConfirmRoughProjectAssignment do
       end
     end
 
-    context 'with authorization' do
-      it 'fails when admin belongs to different organization' do
-        other_organization = create(:organization)
-        other_admin = create(:admin, organization: other_organization)
-
-        result = described_class.call(
-          rough_assignment: rough_assignment,
-          admin: other_admin
-        )
-
-        expect(result.failure?).to be true
-        expect(result.error).to be_a(BaseUseCase::ValidationError)
-        expect(result.error.message).to eq('Admin must belong to same organization')
-      end
-    end
   end
 end

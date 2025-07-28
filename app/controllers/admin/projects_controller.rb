@@ -4,8 +4,8 @@ class Admin::ProjectsController < ApplicationController
   layout 'admin'
 
   def index
-    @standard_projects = StandardProject.includes(:organization).order(:created_at)
-    @ongoing_projects = OngoingProject.includes(:organization).order(:created_at)
+    @standard_projects = StandardProject.order(:created_at)
+    @ongoing_projects = OngoingProject.order(:created_at)
   end
 
   def edit
@@ -70,17 +70,16 @@ class Admin::ProjectsController < ApplicationController
   end
 
   def export
-    @standard_projects = StandardProject.includes(:organization).order(:created_at)
-    @ongoing_projects = OngoingProject.includes(:organization).order(:created_at)
+    @standard_projects = StandardProject.order(:created_at)
+    @ongoing_projects = OngoingProject.order(:created_at)
 
     csv_data = CSV.generate(headers: true) do |csv|
-      csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+      csv << ['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
 
       @standard_projects.each do |project|
         csv << [
           "SP#{project.id}",
           'Standard',
-          project.organization.name,
           project.name,
           project.start_date.strftime('%Y-%m-%d'),
           project.end_date.strftime('%Y-%m-%d'),
@@ -94,7 +93,6 @@ class Admin::ProjectsController < ApplicationController
         csv << [
           "OP#{project.id}",
           'Ongoing',
-          project.organization.name,
           project.name,
           '',
           '',

@@ -2,28 +2,18 @@
 #
 # Table name: standard_projects
 #
-#  id              :integer          not null, primary key
-#  budget_hours    :decimal(10, 1)
-#  client_name     :string
-#  end_date        :date             not null
-#  name            :string           not null
-#  notes           :text
-#  start_date      :date             not null
-#  status          :string           default("tentative"), not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  organization_id :integer          not null
-#
-# Indexes
-#
-#  index_standard_projects_on_organization_id  (organization_id)
-#
-# Foreign Keys
-#
-#  organization_id  (organization_id => organizations.id)
+#  id           :integer          not null, primary key
+#  budget_hours :decimal(10, 1)
+#  client_name  :string
+#  end_date     :date             not null
+#  name         :string           not null
+#  notes        :text
+#  start_date   :date             not null
+#  status       :string           default("tentative"), not null
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
 #
 class StandardProject < ApplicationRecord
-  belongs_to :organization
   has_many :rough_project_assignments, dependent: :destroy
   has_many :detailed_project_assignments, dependent: :destroy
   has_one :project_plan, dependent: :destroy

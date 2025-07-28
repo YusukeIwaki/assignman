@@ -2,9 +2,8 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin::Projects', type: :request do
-  let(:organization) { create(:organization, name: 'Test Organization') }
-  let(:standard_project1) { create(:standard_project, organization: organization, name: 'Web Project', client_name: 'Client A') }
-  let(:ongoing_project1) { create(:ongoing_project, organization: organization, name: 'Support Project', client_name: 'Client B') }
+  let(:standard_project1) { create(:standard_project, name: 'Web Project', client_name: 'Client A') }
+  let(:ongoing_project1) { create(:ongoing_project, name: 'Support Project', client_name: 'Client B') }
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do
@@ -38,12 +37,11 @@ RSpec.describe 'Admin::Projects', type: :request do
       csv_data = CSV.parse(response.body, headers: true)
 
       expect(csv_data.length).to eq(2)
-      expect(csv_data.headers).to eq(['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
+      expect(csv_data.headers).to eq(['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At'])
 
       # Check standard project data
       standard_row = csv_data.find { |row| row['Name'] == 'Web Project' }
       expect(standard_row['Type']).to eq('Standard')
-      expect(standard_row['Organization']).to eq('Test Organization')
       expect(standard_row['Created At']).to eq('2024-01-15')
 
       # Check ongoing project data
@@ -71,9 +69,9 @@ RSpec.describe 'Admin::Projects', type: :request do
 
     it 'skips non-existent projects in CSV' do
       valid_csv = CSV.generate(headers: true) do |csv|
-        csv << ['ID', 'Type', 'Organization', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
-        csv << ["SP#{standard_project1.id}", 'Standard', 'Test Organization', 'Updated Web Project', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
-        csv << ['SP99999', 'Standard', 'Test Organization', 'Non Existent Project', '2024-01-01', '2024-06-30', '100', '', '2024-01-15']
+        csv << ['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
+        csv << ["SP#{standard_project1.id}", 'Standard', 'Updated Web Project', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
+        csv << ['SP99999', 'Standard', 'Non Existent Project', '2024-01-01', '2024-06-30', '100', '', '2024-01-15']
       end
 
       csv_file = Tempfile.new(['projects', '.csv'])

@@ -2,11 +2,6 @@ class CreateOngoingAssignment < BaseUseCase
   def call(ongoing_project:, member:, start_date:, end_date:, weekly_scheduled_hours:, admin:)
     validate_inputs(ongoing_project, member, start_date, end_date, weekly_scheduled_hours, admin)
 
-    # Check if admin has permission to manage this project
-    unless can_manage_project?(admin, ongoing_project)
-      return failure(BaseUseCase::AuthorizationError.new('Admin cannot manage this project'))
-    end
-
     # For ongoing assignments, we need to check capacity constraints immediately
     if would_exceed_capacity?(member, start_date, end_date, weekly_scheduled_hours, nil)
       return failure(BaseUseCase::ValidationError.new('Assignment would exceed member capacity'))
@@ -41,22 +36,7 @@ class CreateOngoingAssignment < BaseUseCase
     raise BaseUseCase::ValidationError, 'Weekly scheduled hours is required' unless weekly_scheduled_hours
     raise BaseUseCase::ValidationError, 'Admin is required' unless admin
 
-    unless ongoing_project.organization_id == member.organization_id
-      raise BaseUseCase::ValidationError,
-            'Project and member must belong to same organization'
-    end
-    return if admin.organization_id == member.organization_id
-
-    raise BaseUseCase::ValidationError,
-          'Admin must belong to same organization'
-
     # NOTE: end_date is optional for ongoing assignments (can be nil for indefinite assignments)
-  end
-
-  def can_manage_project?(admin, ongoing_project)
-    # For now, simple check that admin and project belong to same organization
-    # In future, this could check for specific permissions
-    admin.organization_id == ongoing_project.organization_id
   end
 
   def would_exceed_capacity?(member, start_date, end_date, weekly_scheduled_hours, exclude_assignment_id)
