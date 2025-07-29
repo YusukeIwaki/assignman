@@ -69,14 +69,11 @@ RSpec.describe CreateRoughProjectAssignment do
 
 
       context 'when overlapping rough assignment exists' do
-        let!(:existing_assignment) do
+        it 'fails to create overlapping assignment' do
           create(:rough_project_assignment,
                  member: member,
                  start_date: start_date - 1.week,
                  end_date: end_date + 1.week)
-        end
-
-        it 'fails to create overlapping assignment' do
           result = use_case.call(**params)
           expect(result).to be_failure
           expect(result.error.message).to eq('Member already has overlapping rough assignment')

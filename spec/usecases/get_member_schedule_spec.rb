@@ -54,34 +54,27 @@ RSpec.describe GetMemberSchedule do
         create(:ongoing_project, name: 'Project Beta')
       end
 
-      let!(:detailed_assignment) do
+      it 'includes confirmed and ongoing assignments but excludes rough assignments' do
         create(:detailed_project_assignment,
                member: member,
                standard_project: standard_project,
                start_date: Date.new(2024, 1, 8),    # Monday
                end_date: Date.new(2024, 1, 10),     # Wednesday
                scheduled_hours: 6.0)  # 2 hours per day * 3 days
-      end
 
-      let!(:ongoing_assignment) do
         create(:ongoing_assignment,
                member: member,
                ongoing_project: ongoing_project,
                start_date: Date.new(2024, 1, 10),   # Wednesday
                end_date: nil,
                weekly_scheduled_hours: 10.0)  # 2 hours per day
-      end
 
-      let!(:rough_assignment) do
         create(:rough_project_assignment,
                member: member,
                standard_project: standard_project,
                start_date: Date.new(2024, 1, 13),   # Saturday
                end_date: Date.new(2024, 1, 14),     # Sunday
                scheduled_hours: 10.0)
-      end
-
-      it 'includes confirmed and ongoing assignments but excludes rough assignments' do
         result = described_class.call(**valid_params)
 
         expect(result.success?).to be true
@@ -104,6 +97,20 @@ RSpec.describe GetMemberSchedule do
       end
 
       it 'calculates summary statistics correctly' do
+        create(:detailed_project_assignment,
+               member: member,
+               standard_project: standard_project,
+               start_date: Date.new(2024, 1, 8),    # Monday
+               end_date: Date.new(2024, 1, 10),     # Wednesday
+               scheduled_hours: 6.0)  # 2 hours per day * 3 days
+
+        create(:ongoing_assignment,
+               member: member,
+               ongoing_project: ongoing_project,
+               start_date: Date.new(2024, 1, 10),   # Wednesday
+               end_date: nil,
+               weekly_scheduled_hours: 10.0)  # 2 hours per day
+
         result = described_class.call(**valid_params)
 
         expect(result.data[:summary][:max_hours]).to be > 0
@@ -111,6 +118,13 @@ RSpec.describe GetMemberSchedule do
       end
 
       it 'includes assignment details' do
+        detailed_assignment = create(:detailed_project_assignment,
+               member: member,
+               standard_project: standard_project,
+               start_date: Date.new(2024, 1, 8),    # Monday
+               end_date: Date.new(2024, 1, 10),     # Wednesday
+               scheduled_hours: 6.0)  # 2 hours per day * 3 days
+
         result = described_class.call(**valid_params)
 
         monday_schedule = result.data[:daily_schedule]

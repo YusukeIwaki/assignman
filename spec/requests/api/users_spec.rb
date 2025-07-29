@@ -17,12 +17,11 @@ RSpec.describe 'Api::Users' do
     end
 
     context 'when users exist' do
-      let!(:users) do
-        (1..25).map do |i|
+      before do
+        (1..25).each do |i|
           user = create(:user)
           user.user_credential.update!(email: "user#{i}@example.com")
           user.user_profile.update!(name: "User #{i}")
-          user
         end
       end
 
@@ -102,7 +101,9 @@ RSpec.describe 'Api::Users' do
     end
 
     context 'parameter validation' do
-      let!(:user) { create(:user) }
+      before do
+        create(:user)
+      end
 
       it 'enforces maximum limit of 100' do
         get '/api/users', params: { limit: 200 }

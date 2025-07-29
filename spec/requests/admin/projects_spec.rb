@@ -2,8 +2,8 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin::Projects', type: :request do
-  let(:standard_project1) { create(:standard_project, name: 'Web Project', client_name: 'Client A') }
-  let(:ongoing_project1) { create(:ongoing_project, name: 'Support Project', client_name: 'Client B') }
+  let!(:standard_project1) { create(:standard_project, name: 'Web Project', client_name: 'Client A') }
+  let!(:ongoing_project1) { create(:ongoing_project, name: 'Support Project', client_name: 'Client B') }
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do
@@ -11,10 +11,6 @@ RSpec.describe 'Admin::Projects', type: :request do
     end
   end
 
-  before do
-    standard_project1
-    ongoing_project1
-  end
 
   describe 'GET /admin/projects' do
     it 'returns projects list' do

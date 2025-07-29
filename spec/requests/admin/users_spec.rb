@@ -2,8 +2,8 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin::Users', type: :request do
-  let(:user1) { create(:user) }
-  let(:user2) { create(:user) }
+  let!(:user1) { create(:user) }
+  let!(:user2) { create(:user) }
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do

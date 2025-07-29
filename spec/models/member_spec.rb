@@ -64,27 +64,26 @@ RSpec.describe Member do
 
     context 'with detailed project assignments' do
       let(:project) { create(:standard_project, start_date: today - 1.week, end_date: today + 1.month) }
-      let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: today, end_date: today + 4.days) }
 
       it 'calculates daily hours correctly' do
+        create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: today, end_date: today + 4.days)
         expect(member.scheduled_hours_on_date(today)).to eq(8.0)
       end
     end
 
     context 'with ongoing assignments' do
-      let!(:assignment) { create(:ongoing_assignment, member: member, weekly_scheduled_hours: 20.0, start_date: today) }
-
       it 'calculates daily hours correctly' do
+        create(:ongoing_assignment, member: member, weekly_scheduled_hours: 20.0, start_date: today)
         expect(member.scheduled_hours_on_date(today + 1.day)).to eq(4.0)
       end
     end
 
     context 'with both types of assignments' do
       let(:project) { create(:standard_project, start_date: today - 1.week, end_date: today + 1.month) }
-      let!(:detailed) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: today, end_date: today + 4.days) }
-      let!(:ongoing) { create(:ongoing_assignment, member: member, weekly_scheduled_hours: 10.0, start_date: today) }
 
       it 'sums hours correctly' do
+        create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: today, end_date: today + 4.days)
+        create(:ongoing_assignment, member: member, weekly_scheduled_hours: 10.0, start_date: today)
         expect(member.scheduled_hours_on_date(today + 1.day)).to eq(6.0)
       end
     end
@@ -119,9 +118,9 @@ RSpec.describe Member do
 
       context 'with assignments' do
         let(:project) { create(:standard_project, start_date: monday - 1.week, end_date: monday + 1.month) }
-        let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: monday, end_date: monday + 4.days) }
 
         it 'returns remaining hours' do
+          create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 20.0, start_date: monday, end_date: monday + 4.days)
           expect(member.available_hours_on_date(monday)).to eq(4.0)
         end
       end
@@ -146,9 +145,9 @@ RSpec.describe Member do
 
     context 'with assignments' do
       let(:project) { create(:standard_project, start_date: week_start - 1.week, end_date: week_start + 1.month) }
-      let!(:assignment) { create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: week_start, end_date: week_start + 4.days) }
 
       it 'calculates weekly hours correctly' do
+        create(:detailed_project_assignment, member: member, standard_project: project, scheduled_hours: 40.0, start_date: week_start, end_date: week_start + 4.days)
         expect(member.scheduled_hours_for_week(week_start)).to eq(40.0)
       end
     end

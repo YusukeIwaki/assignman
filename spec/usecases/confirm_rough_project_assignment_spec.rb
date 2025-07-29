@@ -40,16 +40,13 @@ RSpec.describe ConfirmRoughProjectAssignment do
     end
 
     context 'with capacity constraints' do
-      let!(:existing_detailed_assignment) do
+      it 'fails when creating would exceed member capacity' do
         create(:detailed_project_assignment,
                member: member,
                standard_project: standard_project,
                start_date: Date.new(2024, 1, 8),
                end_date: Date.new(2024, 1, 15),
                scheduled_hours: 32.0)
-      end
-
-      it 'fails when creating would exceed member capacity' do
         result = described_class.call(
           rough_assignment: rough_assignment,
           admin: admin

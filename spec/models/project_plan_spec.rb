@@ -45,10 +45,9 @@ RSpec.describe ProjectPlan do
     end
 
     context 'with rough assignments' do
-      let!(:assignment1) { create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 40.0) }
-      let!(:assignment2) { create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 20.0) }
-
       it 'sums all rough assignment hours' do
+        create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 40.0)
+        create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 20.0)
         expect(project_plan.total_rough_hours).to eq(60.0)
       end
     end
@@ -65,10 +64,9 @@ RSpec.describe ProjectPlan do
     end
 
     context 'with detailed assignments' do
-      let!(:assignment1) { create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 80.0) }
-      let!(:assignment2) { create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 40.0) }
-
       it 'sums all detailed assignment hours' do
+        create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 80.0)
+        create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 40.0)
         expect(project_plan.total_detailed_hours).to eq(120.0)
       end
     end
@@ -87,10 +85,9 @@ RSpec.describe ProjectPlan do
     end
 
     context 'when project has budget_hours' do
-      let!(:rough_assignment) { create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 50.0) }
-      let!(:detailed_assignment) { create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 80.0) }
-
       it 'calculates remaining budget correctly' do
+        create(:rough_project_assignment, standard_project: standard_project, scheduled_hours: 50.0)
+        create(:detailed_project_assignment, standard_project: standard_project, scheduled_hours: 80.0)
         expect(project_plan.budget_remaining).to eq(70.0)
       end
     end

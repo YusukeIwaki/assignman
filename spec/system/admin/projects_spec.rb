@@ -2,10 +2,13 @@ require 'rails_helper'
 require 'csv'
 
 RSpec.describe 'Admin Projects', type: :system do
-  let(:standard_project1) { create(:standard_project, name: 'Web Development', client_name: 'Client A', status: 'confirmed') }
-  let(:standard_project2) { create(:standard_project, name: 'Mobile App', client_name: 'Client B', status: 'tentative') }
-  let(:ongoing_project1) { create(:ongoing_project, name: 'Support Service', client_name: 'Client C', status: 'active') }
-  let(:ongoing_project2) { create(:ongoing_project, name: 'Maintenance', client_name: 'Client D', status: 'inactive') }
+  # rubocop:disable RSpec/LetSetup
+  # These projects are displayed in the UI and used in assertions
+  let!(:standard_project1) { create(:standard_project, name: 'Web Development', client_name: 'Client A', status: 'confirmed') }
+  let!(:standard_project2) { create(:standard_project, name: 'Mobile App', client_name: 'Client B', status: 'tentative') }
+  let!(:ongoing_project1) { create(:ongoing_project, name: 'Support Service', client_name: 'Client C', status: 'active') }
+  let!(:ongoing_project2) { create(:ongoing_project, name: 'Maintenance', client_name: 'Client D', status: 'inactive') }
+  # rubocop:enable RSpec/LetSetup
 
   around do |example|
     travel_to Time.zone.parse('2024-01-15 12:00:00') do
@@ -13,12 +16,6 @@ RSpec.describe 'Admin Projects', type: :system do
     end
   end
 
-  before do
-    standard_project1
-    standard_project2
-    ongoing_project1
-    ongoing_project2
-  end
 
   describe 'Projects index page' do
     before do
@@ -93,7 +90,7 @@ RSpec.describe 'Admin Projects', type: :system do
   end
 
   describe 'CSV Import' do
-    let(:csv_content) do
+    let!(:csv_content) do
       CSV.generate(headers: true) do |csv|
         csv << ['ID', 'Type', 'Name', 'Start Date', 'End Date', 'Budget Hours', 'Budget', 'Created At']
         csv << ["SP#{standard_project1.id}", 'Standard', 'Web Development Updated', '2024-01-01', '2024-06-30', '200', '', '2024-01-15']
